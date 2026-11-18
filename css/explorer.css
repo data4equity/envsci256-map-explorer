@@ -23,7 +23,7 @@ h1 { margin: 2px 0 8px; font-size: 1.5rem; }
 .tabs a { padding: 9px 14px; font-weight: 600; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent; }
 .tabs a[aria-selected="true"] { color: var(--accent); border-color: var(--accent); }
 main.wrap { padding-block: 16px 40px; display: grid; gap: 14px; }
-.intro p { margin: 0; max-width: 90ch; }
+.intro p { margin: 0; }
 .load { padding: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
 .load.error { color: #a11; border-color: #e7b4b4; }
 .savenote { margin: 0; font-size: 1.12rem; line-height: 1.45; font-weight: 600; color: #fff; background: #12302d; border-radius: 8px; padding: 12px 16px; }
