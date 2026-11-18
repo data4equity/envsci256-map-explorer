@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ENVSCI 256 Map Explorer</title>
+<meta name="description" content="Course map explorer for ENVSCI 256 Health and Medical Geography: filter, color, buffer and save maps of Massachusetts census tracts.">
+<link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+<link rel="stylesheet" href="css/explorer.css">
+</head>
+<body>
+<header class="site-head">
+  <div class="wrap">
+    <p class="kicker">ENVSCI 256 · Health and Medical Geography</p>
+    <h1>Course Map Explorer</h1>
+    <nav class="tabs" role="tablist" aria-label="Assignments">
+      <a href="#exercise-4" role="tab" data-tab="exercise-4" aria-selected="true">Exercise 4</a>
+      <a href="#midterm" role="tab" data-tab="midterm" aria-selected="false">Midterm</a>
+      <a href="#term-project" role="tab" data-tab="term-project" aria-selected="false">Term Project</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="intro" data-panel="exercise-4">
+    <p>Follow the <b>Guide for observing and interpreting spatial relationships</b> in Canvas. Where the guide says Felt, use this page: the steps are the same. Start in step 1 with Chelsea and the neighboring town you chose in Exercise 3.</p>
+  </section>
+  <section class="intro" data-panel="midterm" hidden>
+    <p>Follow the <b>Midterm Guide</b> in Canvas. Where the guide says Felt, use this page: the steps are the same. Start in step 1 with Lawrence and Methuen.</p>
+  </section>
+
+  <section data-panel="exercise-4 midterm">
+    <p id="load-status" class="load" role="status">Loading the map data for all of Massachusetts…</p>
+    <div id="explorer"></div>
+    <p class="muted small foot">The page saves nothing between visits. Use <b>Copy link</b> in step 5 to keep your map: the link reopens it exactly as you left it.</p>
+  </section>
+
+  <section data-panel="term-project" hidden>
+    <p>Each team will have its own page here, under its project question, with that question's layers already added. The team pages open later in the term.</p>
+    <div class="qgrid">
+      <div class="qcard"><div class="ql">Question A</div><h2>Air Quality, Housing, and Asthma</h2><div class="teams"><span>Team A1</span><span>Team A2</span></div></div>
+      <div class="qcard"><div class="ql">Question B</div><h2>MassHealth Eligibility Changes and Healthcare Access</h2><div class="teams"><span>Team B1</span><span>Team B2</span></div></div>
+      <div class="qcard"><div class="ql">Question C</div><h2>Neighborhood Environment: Green Space and the Retail Landscape</h2><div class="teams"><span>Team C1</span><span>Team C2</span></div></div>
+      <div class="qcard"><div class="ql">Question D</div><h2>Housing Conditions, Mental Health, and Teen Pregnancy</h2><div class="teams"><span>Team D1</span><span>Team D2</span></div></div>
+    </div>
+  </section>
+</main>
+
+<script src="vendor/leaflet/leaflet.js"></script>
+<script src="vendor/turf/turf.min.js"></script>
+<script src="vendor/simple-statistics/simple-statistics.min.js"></script>
+<script src="js/measures.js"></script>
+<script src="js/core.js"></script>
+<script src="js/explorer.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
