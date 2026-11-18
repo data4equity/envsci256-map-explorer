@@ -88,7 +88,7 @@
       const keepScroll = this.panel.scrollTop;
       this.panel.innerHTML = "";
       const steps = [["Filter", "Filter tracts by town (one or more)", this.gFilter()], ["Style", "Color the tracts", this.gStyle()],
-        ["Condition", "Add the neighborhood condition", this.gCond()], ["Buffer", "Buffer the condition", this.gBuffer()], ["Save", "Title, save and link", this.gSave()]];
+        ["Condition", "Add the neighborhood condition", this.gCond()], ["Buffer", "Buffer around the neighborhood condition", this.gBuffer()], ["Save", "Title, save and link", this.gSave()]];
       steps.forEach(([key, title, body], i) => {
         const d = el("details", this.open.has(key) ? { open: "" } : {}, `<summary><span class="num">${i + 1}</span> ${title}</summary>`);
         d.addEventListener("toggle", () => { d.open ? this.open.add(key) : this.open.delete(key); });
