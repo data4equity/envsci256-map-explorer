@@ -26,7 +26,8 @@ main.wrap { padding-block: 16px 40px; display: grid; gap: 14px; }
 .intro p { margin: 0; max-width: 90ch; }
 .load { padding: 14px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
 .load.error { color: #a11; border-color: #e7b4b4; }
-.foot { margin: 0; }
+.savenote { margin: 0; font-size: 1.12rem; line-height: 1.45; font-weight: 600; color: #7a2e0b; background: #fff3e6; border: 2px solid #ea580c; border-left-width: 8px; border-radius: 8px; padding: 12px 16px; }
+.savenote strong { font-weight: 800; }
 
 /* explorer */
 .xp { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: grid; grid-template-columns: 300px minmax(0, 1fr); }
