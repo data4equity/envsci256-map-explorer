@@ -305,9 +305,10 @@
       if (!s.towns.length) { t.innerHTML = `<div class="muted small pad">Filter to your towns in step 1 to see the tract table.</div>`; return; }
       const rows = [...this.sel].sort((a, b) => a.properties.City_Town.localeCompare(b.properties.City_Town) || a.properties.TractFIPS.localeCompare(b.properties.TractFIPS));
       const ck = ciKey(s.measure), summary = this.bufs.length ? C.countByTown(this.sel, this.touch, s.towns).map(([tw, a, n]) => `${esc(tw)}: ${a} of ${n} touch the buffer`).join(" · ") : "Add a condition and a buffer to see which tracts touch it";
-      t.innerHTML = `<details ${this.tableOpen ? "open" : ""}><summary><b>Tract table</b> · ${rows.length} filtered tracts · ${summary}</summary>
-        <div class="tscroll"><table><thead><tr><th scope="col">Tract</th><th scope="col">Town</th><th scope="col">${esc(s.measure)}</th><th scope="col">95% range</th>${this.bufs.length ? `<th scope="col">Buffer</th>` : ""}</tr></thead><tbody>` +
-        rows.map(f => { const p = f.properties; return `<tr><td>${esc(p.NAMELSAD.replace("Census Tract ", ""))}</td><td>${esc(p.City_Town)}</td><td>${fmt(p[valueKey(s.measure)])}</td><td>${esc((ck && p[ck]) || "–")}</td>${this.bufs.length ? `<td>${this.touch.has(p.TractFIPS) ? "In" : "Out"}</td>` : ""}</tr>`; }).join("") +
+      // Option B (her pick, 2026-11-18): the summary is a visible button, with what the table holds spelled out.
+      t.innerHTML = `<details class="ttab" ${this.tableOpen ? "open" : ""}><summary><span class="tbtn"><span class="tbtn-open">▸ Open the tract table</span><span class="tbtn-close">▾ Hide the tract table</span></span><span class="tsum">Every tract's value, its 95% range, and whether it touches the buffer · ${rows.length} tracts · ${summary}</span></summary>
+        <div class="tscroll"><table><thead><tr><th scope="col">GEOID</th><th scope="col">Town</th><th scope="col">${esc(s.measure)}</th><th scope="col">95% range</th>${this.bufs.length ? `<th scope="col">Buffer</th>` : ""}</tr></thead><tbody>` +
+        rows.map(f => { const p = f.properties; return `<tr><td>${esc(p.TractFIPS)}</td><td>${esc(p.City_Town)}</td><td>${fmt(p[valueKey(s.measure)])}</td><td>${esc((ck && p[ck]) || "–")}</td>${this.bufs.length ? `<td>${this.touch.has(p.TractFIPS) ? "In" : "Out"}</td>` : ""}</tr>`; }).join("") +
         `</tbody></table></div></details>`;
       t.querySelector("details").addEventListener("toggle", e => { this.tableOpen = e.target.open; });
     }

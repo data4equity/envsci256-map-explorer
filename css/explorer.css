@@ -117,3 +117,13 @@ select[multiple] { padding: 2px; }
 }
 @media (max-width: 520px) { .qgrid { grid-template-columns: 1fr; } .two { grid-template-columns: 1fr; } .xlegend { max-width: 150px; font-size: .66rem; padding: 5px 7px; } .xlegend .lt { font-size: .7rem; } }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+/* tract table header as a button (option B) */
+.ttab > summary { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; padding: 12px 14px; font-weight: 400; color: var(--fg); }
+.tbtn { flex: none; background: #fff; color: var(--accent); border: 2px solid var(--accent); border-radius: 8px; padding: 7px 13px; font-weight: 700; font-size: .92rem; }
+.ttab > summary:hover .tbtn { background: var(--accent-soft); }
+.ttab .tbtn-close { display: none; }
+.ttab[open] .tbtn-open { display: none; }
+.ttab[open] .tbtn-close { display: inline; }
+.tsum { flex: 1; min-width: 0; font-size: .86rem; }
+.ttab[open] > summary { color: var(--fg); }
