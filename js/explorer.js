@@ -253,7 +253,7 @@
       if (s.towns.length) L.geoJSON({ type: "FeatureCollection", features: this.data.tracts.filter(f => !s.towns.includes(f.properties.City_Town)) },
         { style: { fillColor: "#b9c0bd", fillOpacity: 0.55, color: "#fff", weight: 0.5 }, interactive: false }).addTo(this.lyr.grey);
       const tl = L.geoJSON({ type: "FeatureCollection", features: this.sel }, {
-        style: f => { const k = C.classOf(f.properties[valueKey(s.measure)], this.br); return { fillColor: k < 0 ? "#e5e5e5" : this.pal[k], fillOpacity: 0.88, color: "#fff", weight: s.towns.length ? 0.9 : 0.25 }; },
+        style: f => { const k = C.classOf(f.properties[valueKey(s.measure)], this.br, s.method); return { fillColor: k < 0 ? "#e5e5e5" : this.pal[k], fillOpacity: 0.88, color: "#fff", weight: s.towns.length ? 0.9 : 0.25 }; },
         onEachFeature: (f, l) => l.bindPopup(() => this.tractPopup(f), { maxWidth: 290 })
       }).addTo(this.lyr.tracts);
       const parkTip = f => `<b>${esc(f.properties.SITE_NAME || "Unnamed open space")}</b>, ${esc(f.properties.Town)} · ${fmt(f.properties.GIS_ACRES)} acres<br><span class="muted">Click for options</span>`;
@@ -342,7 +342,7 @@
         const t = f.bbox || (f.bbox = turf.bbox(f)); if (t[0] > view[2] || t[2] < view[0] || t[1] > view[3] || t[3] < view[1]) return;
         poly(f.geometry); g.fillStyle = "#e3e6e5"; g.fill("evenodd"); g.strokeStyle = "#fff"; g.lineWidth = 0.8; g.stroke();
       });
-      this.sel.forEach(f => { const c = C.classOf(f.properties[valueKey(s.measure)], this.br); poly(f.geometry); g.fillStyle = c < 0 ? "#e5e5e5" : this.pal[c]; g.fill("evenodd"); g.strokeStyle = "#fff"; g.lineWidth = 1; g.stroke(); });
+      this.sel.forEach(f => { const c = C.classOf(f.properties[valueKey(s.measure)], this.br, s.method); poly(f.geometry); g.fillStyle = c < 0 ? "#e5e5e5" : this.pal[c]; g.fill("evenodd"); g.strokeStyle = "#fff"; g.lineWidth = 1; g.stroke(); });
       this.offParks.forEach(f => { poly(f.geometry); g.fillStyle = "rgba(213,218,215,.9)"; g.fill(); });
       this.cond.forEach(f => { if (f.geometry.type.includes("Line")) { line(f.geometry); g.strokeStyle = "#2b2b2b"; g.lineWidth = 3; g.stroke(); } else { poly(f.geometry); g.fillStyle = "rgba(124,184,127,.75)"; g.fill(); } });
       this.bufs.forEach(b => { poly(b.geometry); g.strokeStyle = s.bufColor; g.lineWidth = 1.6; g.globalAlpha = this.focusRings ? 0.25 : 1; g.stroke(); g.globalAlpha = 1; });

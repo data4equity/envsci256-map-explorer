@@ -33,8 +33,12 @@
     return [...Array(k + 1)].map((_, i) => ss.quantileSorted(v, i / k));
   }
 
-  function classOf(value, br) {
+  /** Class index of a value. Quantile and equal-interval breaks are upper bounds. ss.jenks returns each class's
+      LOWER bound plus the maximum, so natural breaks use the lower-bound rule (her ruling 2026-11-18:
+      "fix the natural breaks bug"): otherwise the top class holds nothing. */
+  function classOf(value, br, method) {
     if (value == null || br.length < 2) return -1;
+    if (method === "jenks") { for (let i = br.length - 2; i > 0; i--) if (value >= br[i]) return i; return 0; }
     for (let i = 1; i < br.length; i++) if (value <= br[i]) return i - 1;
     return br.length - 2;
   }
