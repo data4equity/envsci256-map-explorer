@@ -95,7 +95,9 @@
     box.querySelector("[data-t=flow3]").innerHTML = V.ico_tracts || "";
     box.querySelector("details.about").open = false;
     const state = fromLink && fromLink.tab === team.id ? fromLink : T.startState(team);
-    if (teamExplorer) teamExplorer.map.remove();
+    // Forget the old map as soon as it is removed: setupScales must never resize a removed map (the bug that broke
+    // switching from one team page to another, found on the live site 2026-11-20).
+    if (teamExplorer) { teamExplorer.map.remove(); teamExplorer = null; }
     setupScales(q);
     const rq = document.getElementById("tp-rq");
     rq.value = state.rq || "";
@@ -117,6 +119,7 @@
       tracts.hidden = scale !== "tracts"; towns.hidden = scale !== "towns";
       document.querySelectorAll("[data-scaleline]").forEach(p => { p.hidden = !q.towns || p.dataset.scaleline !== scale; });
       if (scale === "tracts") { if (teamExplorer) teamExplorer.map.invalidateSize(); return; }
+      if (!q.towns) return;
       if (townArea) { townArea.map.invalidateSize(); return; }
       towns.innerHTML = `<p class="load" role="status">Loading the cities and towns…</p>`;
       getJSON(`data/${q.towns}`).then(doc => { towns.innerHTML = ""; townArea = new window.TownArea.TownArea(towns, doc, window.DataDocs.townCards(), cardsHtml); })
