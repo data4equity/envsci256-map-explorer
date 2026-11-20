@@ -66,6 +66,43 @@
     return lines.map(f => turf.bboxClip(f, bbox)).filter(f => f.geometry.coordinates.length);
   }
 
+  /** Point features (the health centers) inside bbox [west, south, east, north]. */
+  function pointsInBbox(points, bbox) {
+    return points.filter(f => { const [x, y] = f.geometry.coordinates; return x >= bbox[0] && x <= bbox[2] && y >= bbox[1] && y <= bbox[3]; });
+  }
+
+  /** Points (stores) that fall inside any of the given tracts (the towns chosen in step 1). */
+  function pointsInTracts(points, tracts) {
+    const boxes = tracts.map(f => [f, f.bbox || (f.bbox = turf.bbox(f))]);
+    return points.filter(p => { const [x, y] = p.geometry.coordinates;
+      return boxes.some(([f, b]) => x >= b[0] && x <= b[2] && y >= b[1] && y <= b[3] && turf.booleanPointInPolygon(p, f)); });
+  }
+
+  /** Nearest polygon to a point, by distance to its EDGE in miles (0 when the point is inside it), or null. */
+  function nearestEdge(pt, polys) {
+    const [x, y] = pt.geometry.coordinates, kx = 69.17 * Math.cos(y * Math.PI / 180);
+    const lower = b => Math.hypot(Math.max(b[0] - x, 0, x - b[2]) * kx, Math.max(b[1] - y, 0, y - b[3]) * 69.17) * 0.99;
+    const cand = polys.map(f => [f, lower(f.bbox || (f.bbox = turf.bbox(f)))]).sort((a, b) => a[1] - b[1]);
+    let best = null;
+    for (const [f, lb] of cand) {
+      if (best && lb > best.miles) break;
+      let d;
+      if (turf.booleanPointInPolygon(pt, f)) d = 0;
+      else { const ls = turf.polygonToLine(f); d = Math.min(...(ls.type === "FeatureCollection" ? ls.features : [ls]).map(l => turf.pointToLineDistance(pt, l, { units: "miles" }))); }
+      if (!best || d < best.miles) best = { miles: d, feature: f };
+      if (d === 0) break;
+    }
+    return best;
+  }
+
+  /** The store table: each store, its nearest open space and the distance to that edge, nearest first.
+      A store is inside the buffer when that distance is no more than the buffer distance. */
+  function storeRows(stores, parks, miles) {
+    return stores.map(s => { const n = nearestEdge(s, parks);
+      return { store: s, park: n ? n.feature.properties.SITE_NAME || "Unnamed open space" : "", miles: n ? n.miles : null, inside: !!n && n.miles <= miles }; })
+      .sort((a, b) => (a.miles ?? Infinity) - (b.miles ?? Infinity));
+  }
+
   /** access: "Y" | "L" | "N" | "X" | "any"; onlyTowns: null or town names; off: ids switched off. */
   function filterOpenSpace(features, { access, minAcres, onlyTowns, off }) {
     return features.filter(f => {
@@ -106,6 +143,24 @@
     return [park, ...candidates.filter(f => f !== park && f.properties.id !== park.properties.id && turf.booleanIntersects(f, park))].slice(0, max);
   }
 
+  // Margins of error (instructor's rulings 2026-11-18: show them throughout; "95%, match PLACES").
+  // The Census Bureau publishes ACS margins of error at 90% confidence; 1.960 / 1.645 converts them
+  // to 95% (Understanding and Using ACS Data, 2018, ch. 7). Percents stop at 0 and 100.
+  const Z95_OVER_Z90 = 1.960 / 1.645;
+  const roundTo = (v, d) => (Math.round(v * 10 ** d) / 10 ** d).toFixed(d);
+
+  /** A Term Project layer's range for one tract: {ci: "(low, high)", moe: "±x", none} or, for a layer
+      with no margin of error, {none: "No margin of error: …"}; null when the tract has nothing to show. */
+  function acsRange(field, props, key) {
+    if (!field.moe) return field.noMoe ? { ci: null, moe: null, none: `No margin of error: ${field.noMoe}` } : null;
+    const v = props[key], m90 = props[field.moe];
+    if (v == null || m90 == null) return null;
+    const d = field.decimals == null ? 1 : field.decimals, m = m90 * Z95_OVER_Z90, pct = field.unit === "%";
+    const lo = v - m, hi = v + m;
+    const end = (x, cap) => (pct && cap != null ? String(cap) : roundTo(x, d));
+    return { ci: `(${end(lo, pct && lo < 0 ? 0 : null)}, ${end(hi, pct && hi > 100 ? 100 : null)})`, moe: `±${roundTo(m, d)}`, none: null };
+  }
+
   // Copy link: the whole map state travels in the link, base64url-encoded JSON after "#map=".
   const LINK_PREFIX = "map=";
   function toBase64Url(text) {
@@ -125,7 +180,7 @@
   }
 
   const api = { RAMPS, METHODS, rampColors, breaks, classOf, paddedBbox, townsInBbox, filterRoutes, clipToBbox,
-    filterOpenSpace, bufferEach, touchedTracts, countByTown, touchingGroup, encodeState, decodeState };
+    pointsInBbox, pointsInTracts, nearestEdge, storeRows, filterOpenSpace, bufferEach, touchedTracts, countByTown, touchingGroup, acsRange, encodeState, decodeState };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.ExplorerCore = api;
 })(typeof self !== "undefined" ? self : this);

@@ -67,6 +67,11 @@ select[multiple] { padding: 2px; }
 .seg { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
 .seg button { flex: 1; border: 0; background: #fff; padding: 6px; font: inherit; font-size: .8rem; cursor: pointer; }
 .seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+/* Team pages, her pick 2026-11-20 (Option 1): both road filters are boxed buttons; the picked one is green. */
+#team-explorer .seg { border: 0; gap: 6px; }
+#team-explorer .seg button { border-radius: 6px; font-weight: 600; }
+#team-explorer .seg button[aria-pressed="false"] { background: var(--bg); color: var(--muted); border: 2px solid var(--line); }
+#team-explorer .seg button[aria-pressed="true"] { border: 2px solid var(--accent); }
 .bnote { font-size: .8rem; line-height: 1.45; background: var(--note); border-left: 3px solid var(--accent); border-radius: 4px; padding: 7px 9px; color: var(--fg); }
 .pk-head { display: flex; gap: 8px; align-items: baseline; justify-content: space-between; color: var(--fg); }
 .plist { max-height: 230px; overflow: auto; border: 1px solid var(--line); border-radius: 6px; background: #fff; }
@@ -84,6 +89,15 @@ select[multiple] { padding: 2px; }
 .sw.ln { border: 2.5px solid; background: #fff; }
 .sw.rd { border: 0; border-top: 3px solid #2b2b2b; height: 0; vertical-align: 3px; }
 .sw.pk { background: #7cb87f; border-color: #2f7d32; }
+.sw.hc { width: 10px; height: 10px; margin: 0 9px 0 3px; background: #c2185b; border-color: #c2185b; }
+/* Community health centers (Question B): a small square, as in the approved mockup. */
+.chc { background: #c2185b; border: 1.5px solid #fff; box-shadow: 0 0 0 1px rgba(0,0,0,.25); box-sizing: border-box; }
+.chc.off { background: #8a948f; }
+/* Question C stores: filled inside a buffer, hollow outside (approved mockup). */
+.sw.st { width: 10px; height: 10px; margin: 0 9px 0 3px; border-radius: 50%; border: 1.6px solid #5b2a86; background: #fff; }
+.sw.st.in { background: #5b2a86; }
+.xlegend .lsub { margin-top: 4px; font-weight: 600; }
+.scount { padding: 8px 2px 4px; }
 .xfocus { position: absolute; left: 10px; bottom: 26px; z-index: 900; background: rgba(255, 255, 255, .97); border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; max-width: 330px; display: grid; gap: 7px; font-size: .78rem; box-shadow: 0 4px 14px rgba(0, 0, 0, .12); }
 .xfocus[hidden] { display: none; }
 .fch { display: flex; gap: 8px; align-items: center; justify-content: space-between; }
@@ -99,6 +113,11 @@ select[multiple] { padding: 2px; }
 .tscroll { max-height: 260px; overflow: auto; padding: 0 12px 10px; }
 .xtable table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
 .xtable th, .xtable td { padding: 4px 8px; border-bottom: 1px solid var(--line); text-align: left; white-space: nowrap; }
+.xtable tr[data-fips] { cursor: pointer; }
+.xtable tr[data-fips]:hover td { background: #f1f5f3; }
+.xtable tr[data-fips].on td { background: #fff4c2; font-weight: 600; }
+.xtable tr[data-fips]:focus-visible { outline: 2px solid #111; outline-offset: -2px; }
+.leaflet-tooltip.picktip { font-weight: 600; }
 .xtable th { position: sticky; top: 0; background: #fff; font: 600 .7rem var(--mono); text-transform: uppercase; color: var(--muted); }
 
 /* term project tab */
@@ -107,7 +126,34 @@ select[multiple] { padding: 2px; }
 .qcard h2 { font-size: 1rem; margin: 0; }
 .ql { font: 700 .72rem var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--accent); }
 .teams { display: flex; gap: 8px; margin-top: auto; padding-top: 4px; }
-.teams span { flex: 1; text-align: center; font-weight: 700; color: var(--muted); border: 1px dashed var(--line); border-radius: 6px; padding: 8px; }
+.qcard p { margin: 0; font-size: .84rem; color: var(--muted); }
+.teams a { flex: 1; text-align: center; font-weight: 700; background: var(--accent); color: #fff; border-radius: 6px; padding: 9px 8px; text-decoration: none; }
+.teams a:hover { background: #0b5246; }
+.tp-lead { margin: 0 0 12px; }
+.tp-team { display: grid; gap: 12px; }
+.tp-team[hidden] { display: none; }
+.crumb { font-size: .86rem; color: var(--muted); } .crumb b { color: var(--fg); } .crumb a { color: var(--accent); }
+.teamh { margin: 0; font-size: 1.35rem; }
+.qbox { background: var(--panel); border-left: 5px solid var(--accent); border-radius: 6px; padding: 10px 14px; font-size: 1rem; }
+/* Team pages: La Colaborativa's question beside the team's research question (her pick 2026-11-19). */
+.rq2 { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 10px; }
+.rq2 > div { border-radius: 10px; padding: 14px 16px; }
+.rq-a { background: #12302d; color: #fff; }
+.rq-k { margin: 0 0 6px; font: 600 .74rem var(--mono); letter-spacing: .05em; text-transform: uppercase; color: #a8f0d8; }
+.rq-q { margin: 0; font-size: 1.12rem; font-weight: 600; line-height: 1.45; }
+.rq-b { background: var(--panel); border: 2px solid var(--accent); }
+.rq-b .rq-k { color: var(--accent); }
+.rq-b p { margin: 0 0 8px; }
+.rq-b textarea { font-size: .95rem; margin-bottom: 8px; resize: vertical; }
+.rq-b .rq-note { margin: 0; font-weight: 600; }
+.mapnote { margin: 0; padding: 8px 12px; background: #fff4d6; border: 1px solid #e0b84a; border-radius: 8px; font-weight: 600; }
+@media (max-width: 700px) { .rq2 { grid-template-columns: 1fr; } }
+.lyrs { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; overflow: auto; }
+.lyrs table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.lyrs th, .lyrs td { padding: 7px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.lyrs tr:last-child td { border-bottom: 0; }
+.lyrs th { font: 600 .7rem var(--mono); text-transform: uppercase; color: var(--muted); background: #fafbfa; }
+.tp-more { margin: 0; font-size: .9rem; }
 
 @media (max-width: 900px) {
   :root { --map-h: 460px; }
@@ -127,3 +173,76 @@ select[multiple] { padding: 2px; }
 .ttab[open] .tbtn-close { display: inline; }
 .tsum { flex: 1; min-width: 0; font-size: .86rem; }
 .ttab[open] > summary { color: var(--fg); }
+
+/* "About these data" fold-out on team pages (Option A, 2026-11-18) */
+.about { background: var(--panel); border: 1px solid var(--line); border-radius: 9px; }
+.about > summary { padding: 12px 14px; }
+.about .dcards { padding: 0 14px 14px; }
+.dcards { display: grid; gap: 10px; }
+.dcard { background: #fff; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.dcard h3 { margin: 0; padding: 9px 12px; font-size: 1rem; background: #fafbfa; border-bottom: 1px solid var(--line); }
+.dcard table { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.dcard th, .dcard td { padding: 7px 12px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.dcard tr:last-child th, .dcard tr:last-child td { border-bottom: 0; }
+.dcard th { width: 24%; color: var(--muted); font-weight: 600; }
+@media (max-width: 520px) { .dcard th { width: 34%; } .about .tsum { flex-basis: 100%; } }
+
+/* Question D: "Census tracts" | "Cities and towns" tabs, and the town tab (approved layout, Option B). */
+.towns { display: grid; gap: 12px; padding: 12px 0; }
+/* Her pick 2026-11-20 (Option B): a light blue information box, apart from the green and yellow boxes. */
+.tnote { background: #e8f1fb; border: 1px solid #8db3e2; border-left: 6px solid #2563a8; border-radius: 9px; padding: 12px 14px; font-size: .92rem; }
+.tnote-h { font-weight: 700; margin: 0 0 6px; color: #1d4f8a; }
+.tnote-h::before { content: "ⓘ "; }
+.tnote p { margin: 0 0 8px; } .tnote ul { margin: 0; padding-left: 20px; } .tnote li { margin: 4px 0; }
+.tby, .tadd { max-width: 420px; }
+.tmap { height: var(--map-h); position: relative; background: #eef0ef; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+.sw.hatch { background: repeating-linear-gradient(45deg, #ececec 0 3px, #b5b5b5 3px 5px); }
+.th { margin: 6px 0 0; font-size: 1.05rem; }
+.ttable table { border-collapse: collapse; font-size: .84rem; min-width: 100%; }
+.ttable th, .ttable td { padding: 6px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.ttable thead th { white-space: nowrap; }
+.ttable tbody th[scope=row] { font-weight: 400; min-width: 210px; }
+.ttable .grp th { background: #fafbfa; font-weight: 700; color: var(--accent); }
+.ttable .ci { color: var(--muted); font-size: .78rem; }
+.xrm { border: 0; background: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 0 2px; }
+.ttable.tscroll { max-height: none; padding: 0; }
+/* Nothing that is hidden may show: the D tabs, the town tab and the tract map all set their own display,
+   which would otherwise override the hidden attribute (her report 2026-11-19: the town tab showed on every team). */
+[hidden] { display: none !important; }
+/* Pictures throughout the Term Project section (her pick 2026-11-19, "Build all five"). */
+.qpic { margin: 0; text-align: center; background: var(--bg); border-radius: 8px; padding: 6px; }
+.qpic svg { max-width: 100%; height: auto; border-radius: 6px; } .qpic figcaption { font-size: .74rem; color: var(--muted); margin-top: 3px; }
+.gi { display: inline-block; vertical-align: -9px; margin-right: 6px; } .gi svg { width: 28px; height: 28px; }
+.gkey { margin: 0; padding: 6px 12px; font-size: .8rem; color: var(--muted); border-top: 1px solid var(--line); }
+.flow { display: flex; align-items: stretch; gap: 8px; flex-wrap: wrap; }
+.fs { flex: 1; min-width: 150px; display: grid; gap: 2px; background: var(--note); border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; position: relative; }
+.fs > span:last-child { font-size: .82rem; color: var(--muted); }
+.fn { position: absolute; top: 8px; right: 10px; font: 700 .8rem var(--mono); color: var(--accent); }
+.fi { font-size: 1.8rem; line-height: 1; } .fi svg { width: 40px; height: 40px; }
+.fa { align-self: center; font-size: 1.4rem; color: var(--accent); }
+.bwrap { display: flex; gap: 10px; align-items: center; margin-top: 6px; } .bwrap svg { flex: none; }
+.scale-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.scale-tabs button { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 12px; text-align: left; padding: 12px 14px; border: 2px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; font: inherit; }
+.scale-tabs button[aria-selected="true"] { border-color: var(--accent); background: var(--accent-soft); box-shadow: inset 0 -4px 0 var(--accent); }
+.st-pic svg { display: block; border-radius: 6px; } .st-x { display: grid; gap: 3px; }
+.st-t { font-size: 1.2rem; font-weight: 700; color: var(--fg); } .scale-tabs button[aria-selected="true"] .st-t { color: var(--accent); }
+.st-s { font-size: .88rem; color: var(--muted); }
+.scaleline { margin: 0; font-size: .95rem; background: var(--note); border-radius: 8px; padding: 8px 12px; }
+.why2 { border: 1px solid var(--line); border-radius: 8px; background: var(--note); }
+.why2 > summary { padding: 8px 12px; font-weight: 600; color: var(--accent); cursor: pointer; }
+.why2 > div { padding: 0 14px 10px; font-size: .92rem; } .why2 p { margin: 0 0 6px; }
+.pics { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 6px 0 10px; }
+.pics figure { margin: 0; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px; text-align: center; }
+.pics svg { max-width: 100%; height: auto; } .pics figcaption { font-size: .85rem; margin-top: 4px; }
+.rule { font-weight: 700; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
+@media (max-width: 600px) { .scale-tabs, .pics { grid-template-columns: 1fr; } }
+
+/* Her 2026-11-19 edit: green checks, red cross in the two-tabs rule. */
+.rule .ok { color: #1b7a3a; font-weight: 700; }
+.rule .no { color: #c62828; font-weight: 700; }
+
+/* Her ask 2026-11-20: a city or town picked on the map or in the table is highlighted in both. */
+.ttable [data-col].on { background: #fff4c2; }
+.ttable thead th[data-col].on { box-shadow: inset 0 -3px 0 #111; }
+.tpick { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
+.tpick:focus-visible { outline: 2px solid #111; outline-offset: 2px; }
