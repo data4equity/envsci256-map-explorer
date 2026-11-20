@@ -11,7 +11,7 @@
   /** The symbol for a kind of layer: a real picture for tracts and towns, a drawing for the rest. */
   const symbol = k => k ? `<span class="gi" title="${esc(DD().KINDS[k])}">${V["ico_" + k] || DD().SYMBOL_SVG[k] || ""}</span>` : "";
   const CAPTIONS = { a: "Opens on: adult asthma by tract. You add the roads and buffers.", b: "Opens on: Medicaid coverage by tract. You add the health centers and buffers.",
-    c: "Opens on: people under 18 by tract. You add the parks, stores and buffers.", d: "Opens on: housing insecurity by tract; plus a Cities and towns tab" };
+    c: "Opens on: people under 18 by tract. You add the parks, stores and buffers.", d: "Opens on: depression by tract; plus a Cities and towns tab" };
 
   const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 

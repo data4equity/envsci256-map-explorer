@@ -65,7 +65,7 @@
       id: "d", title: "Housing Conditions, Mental Health, and Teen Pregnancy",
       text: "Housing instability is a risk factor for teen pregnancy. This project traces that link: how crowded, unhealthy housing (mold, pests, poor air quality) relates to anxiety, depression, and isolation, and how Chelsea's teen pregnancy rate compares with other Massachusetts cities. The aim is to show that teen pregnancy rates are shaped by upstream factors, like housing, that act long before any individual decision.",
       file: "term/question-d.json",
-      // Her approval 2026-11-18: "Use it, D approved". The "Cities and towns" tab (towns.js) reads `towns`.
+      // Her approval 2026-11-18: "Use it, D approved". Opens on depression, a health outcome (her ruling 2026-11-20). The "Cities and towns" tab (towns.js) reads `towns`.
       towns: "towns/question-d-towns.json",
       layers: [
         { key: "DEPRESSION", places: true },
@@ -80,7 +80,7 @@
         { key: "pct_renter_built_1979_or_earlier", file: true },
         { key: "pct_owner_built_1979_or_earlier", file: true }
       ],
-      start: { towns: ["Chelsea"], measure: "HOUSINSECU", ramp: "Oranges", miles: 0 }
+      start: { towns: ["Chelsea"], measure: "DEPRESSION", ramp: "Oranges", miles: 0 }
     }
   ];
 
