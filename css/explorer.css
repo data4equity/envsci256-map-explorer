@@ -32,7 +32,15 @@ main.wrap { padding-block: 16px 40px; display: grid; gap: 14px; }
 /* explorer */
 .xp { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: grid; grid-template-columns: 300px minmax(0, 1fr); }
 .xpanel { border-right: 1px solid var(--line); overflow: auto; max-height: var(--map-h); font-size: .86rem; }
-.xmapcol { min-width: 0; }
+.xmapcol { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr) 230px; }
+.xviewbar { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 8px 12px; border-bottom: 1px solid var(--line); font-size: .82rem; }
+.xviewbar input[type=range] { width: 150px; }
+.peek[aria-pressed="true"] { background: var(--accent); color: #fff; }
+.xstrip { border-left: 1px solid var(--line); padding: 10px; display: grid; gap: 8px; align-content: start; background: var(--panel); }
+.xstrip .inhead { display: flex; align-items: center; gap: 4px; }
+.xstrip .inbox { background: #eef0ef; border: 1px solid var(--line); border-radius: 6px; }
+.xstrip .inbox svg { display: block; }
+.xstrip .il { font: 600 .68rem var(--mono); text-transform: uppercase; letter-spacing: .03em; color: var(--muted); }
 .xmap { height: var(--map-h); position: relative; background: #eef0ef; }
 .xtable { grid-column: 1 / -1; border-top: 1px solid var(--line); font-size: .82rem; }
 .xtable .pad { padding: 10px 12px; margin: 0; }
@@ -81,8 +89,7 @@ select[multiple] { padding: 2px; }
 .linkout textarea { font: .74rem var(--mono); }
 
 /* map overlays */
-.xlegend { position: absolute; right: 10px; top: 10px; z-index: 900; background: rgba(255, 255, 255, .96); border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; font-size: .74rem; max-width: 220px; display: grid; gap: 2px; }
-.xlegend.tucked { display: none; }
+.xlegend { background: rgba(255, 255, 255, .96); border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; font-size: .74rem; max-width: 220px; display: grid; gap: 2px; }
 .xlegend .lt { font-weight: 700; font-size: .78rem; margin-bottom: 2px; }
 .xlegend .lsrc { color: var(--muted); margin-top: 3px; }
 .sw { display: inline-block; width: 16px; height: 11px; margin-right: 6px; vertical-align: -1px; border: 1px solid #cfd4d2; }
@@ -118,6 +125,10 @@ select[multiple] { padding: 2px; }
 .xtable tr[data-fips].on td { background: #fff4c2; font-weight: 600; }
 .xtable tr[data-fips]:focus-visible { outline: 2px solid #111; outline-offset: -2px; }
 .leaflet-tooltip.picktip { font-weight: 600; }
+.ibtn { display:inline-grid; place-items:center; width:17px; height:17px; margin-left:5px; border-radius:50%; border:1.5px solid var(--accent); color:var(--accent); background:#fff; font:700 .68rem var(--body); cursor:pointer; padding:0; vertical-align:1px }
+.ibtn[aria-expanded="true"] { background:var(--accent); color:#fff }
+.colnote { background:#e8f2fb; border:1px solid #9cc3e6; color:#0b3d66; border-radius:6px; padding:8px 10px; white-space:normal; text-align:left; display:grid; gap:4px }
+.colnote b { display:block }
 .xtable th { position: sticky; top: 0; background: #fff; font: 600 .7rem var(--mono); text-transform: uppercase; color: var(--muted); }
 
 /* term project tab */
@@ -158,6 +169,8 @@ select[multiple] { padding: 2px; }
 @media (max-width: 900px) {
   :root { --map-h: 460px; }
   .xp { grid-template-columns: 1fr; }
+  .xmapcol { grid-template-columns: minmax(0, 1fr); }
+  .xstrip { border-left: 0; border-top: 1px solid var(--line); }
   .xpanel { border-right: 0; border-bottom: 1px solid var(--line); max-height: none; }
   .qgrid { grid-template-columns: 1fr 1fr; }
 }
@@ -246,3 +259,8 @@ select[multiple] { padding: 2px; }
 .ttable thead th[data-col].on { box-shadow: inset 0 -3px 0 #111; }
 .tpick { cursor: pointer; text-decoration: underline dotted; text-underline-offset: 3px; }
 .tpick:focus-visible { outline: 2px solid #111; outline-offset: 2px; }
+
+.xpanel details > summary { display: flex; align-items: center; gap: 4px; }
+.rlink { border: 0; background: transparent; color: var(--accent); text-decoration: underline; font: 600 .74rem var(--body); margin-left: auto; cursor: pointer; padding: 2px 4px; }
+.startover { display: block; width: calc(100% - 24px); margin: 10px 12px 4px; }
+button:disabled { opacity: .45; cursor: default; }

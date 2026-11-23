@@ -81,7 +81,7 @@
     status.hidden = false; status.textContent = "Loading your team's layers…"; status.classList.remove("error");
     let doc;
     try { doc = await questionFile(q); } catch (e) {
-      status.textContent = "Your team's layers did not load. Reload the page; if it still fails, email your instructor."; status.classList.add("error"); teamShown = null; throw e;
+      status.textContent = "The page could not load your team's layers. Reload the page; if it still fails, email your instructor."; status.classList.add("error"); teamShown = null; throw e;
     }
     if (teamShown !== team.id) return; // the student clicked another team while this one loaded
     status.hidden = true;
@@ -103,7 +103,7 @@
     rq.value = state.rq || "";
     rq.oninput = () => { if (teamExplorer) teamExplorer.s.rq = rq.value; };
     teamExplorer = new window.Explorer(document.getElementById("team-explorer"), { tracts: data.tracts, routes: data.routes, sources: data.sources, openSpaceFor, healthCenters, storesFor }, state,
-      { pickRows: true, optionalBuffer: true, termLayers: T.fileLayerKeys(q), termHeading: `Question ${q.id.toUpperCase()} layers`, conditions: T.conditionLayers(q), stores: T.storeLayers(q) });
+      { opening: T.startState(team), pickRows: true, optionalBuffer: true, termLayers: T.fileLayerKeys(q), termHeading: `Question ${q.id.toUpperCase()} layers`, conditions: T.conditionLayers(q), stores: T.storeLayers(q) });
   }
 
   /** Question D: "Census tracts" | "Cities and towns" tabs above the map (her pick "B, tabs", 2026-11-18). */
@@ -123,7 +123,7 @@
       if (townArea) { townArea.map.invalidateSize(); return; }
       towns.innerHTML = `<p class="load" role="status">Loading the cities and towns…</p>`;
       getJSON(`data/${q.towns}`).then(doc => { towns.innerHTML = ""; townArea = new window.TownArea.TownArea(towns, doc, window.DataDocs.townCards(), cardsHtml); })
-        .catch(e => { towns.innerHTML = `<p class="load error">The cities and towns did not load. Reload the page; if it still fails, email your instructor.</p>`; throw e; });
+        .catch(e => { towns.innerHTML = `<p class="load error">The page could not load the cities and towns. Reload the page; if it still fails, email your instructor.</p>`; throw e; });
     };
     bar.querySelectorAll("[data-scale]").forEach(b => b.onclick = () => pick(b.dataset.scale));
     pick("tracts");
@@ -169,10 +169,10 @@
       const fromLink = C.decodeState(location.hash);
       // A team page's link restores into that team's explorer, not the Exercise 4 / midterm one.
       const forMain = fromLink && !T.teamById(fromLink.tab) ? fromLink : null;
-      window.explorer = new window.Explorer(document.getElementById("explorer"), { tracts: data.tracts, routes: data.routes, sources, openSpaceFor }, forMain);
+      window.explorer = new window.Explorer(document.getElementById("explorer"), { tracts: data.tracts, routes: data.routes, sources, openSpaceFor }, forMain, { opening: window.ExplorerDefaults });
       status.remove();
     } catch (e) {
-      status.textContent = "The map data did not load. Reload the page; if it still fails, email your instructor.";
+      status.textContent = "The page could not load the map data. Reload the page; if it still fails, email your instructor.";
       status.classList.add("error");
       throw e;
     }

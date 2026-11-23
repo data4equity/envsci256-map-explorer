@@ -8,8 +8,8 @@
     title: "What is in this tab, and why some of it is not on a map",
     intro: "The “Census tracts” tab shows census tracts. Each tract is a stand-in (proxy) for a neighborhood within a city. Some data for Question D are published only for whole cities and towns, so they are in this tab instead. Compare these numbers city with city, or with the state. Do not compare them with the “Census tracts” tab.",
     items: [
-      ["Teen birth rate", ", from the Massachusetts Department of Public Health. Published for every city and town, but not for census tracts. That is why it is not in the “Census tracts” tab. It is on the town map below."],
-      ["Crowded homes and age of homes", ", from the U.S. Census Bureau. The same numbers as the “Census tracts” tab, added up for each whole city or town. On the town map below."],
+      ["Teen birth rate", ", from the Massachusetts Department of Public Health. Published for every city and town, but not for census tracts. That is why it is not in the “Census tracts” tab. It appears on the town map further down this page."],
+      ["Crowded homes and age of homes", ", from the U.S. Census Bureau. The same numbers as the “Census tracts” tab, added up for each whole city or town. Shown on the town map further down this page."],
       ["Depression, mental distress, loneliness, lack of support, housing insecurity and utility shut-off threat", ", from the Centers for Disease Control and Prevention (CDC). CDC publishes these for 58 Massachusetts cities, Chelsea among them, but not for the other 293 towns. A map would leave most of the state blank, so these numbers are only in the table. If you add a town CDC does not cover, its column says “Not published by CDC.”"]
     ]
   };
@@ -57,7 +57,7 @@
         <label class="tby">Color the towns by<select data-k="by">${["teen_rate", ...HOUSING].map(k => `<option value="${k}">${esc(this.label(k))}</option>`).join("")}</select></label>
         <div class="tmap" role="region" aria-label="Map of Massachusetts cities and towns"><div class="xlegend tlegend"></div></div>
         <h3 class="th">Your comparison table</h3>
-        <p class="muted small">Teams add the cities and towns they choose to compare. Numbers in brackets are 95% confidence intervals. Click a city or town on the map, or its name in the table, to highlight it in both.</p>
+        <p class="muted small">Each team adds its own comparison cities and towns. Numbers in brackets are 95% confidence intervals. Click a city or town on the map, or its name in the table, to highlight it in both.</p>
         <div class="tscroll ttable"></div>
         <label class="tadd"><span class="sr">Add a city or town to the table</span><select data-k="add"></select></label>
         <details class="about ttab"><summary><span class="tbtn"><span class="tbtn-open">▸ About these data</span><span class="tbtn-close">▾ Hide: About these data</span></span><span class="tsum">The data in this tab: teen births, housing for each city or town, and CDC measures for cities</span></summary><div class="dcards">${fold}</div></details>`;

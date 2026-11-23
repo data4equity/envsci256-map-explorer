@@ -8,6 +8,23 @@
     Purples: ["#f2f0f7", "#dadaeb", "#bcbddc", "#9e9ac8", "#807dba", "#6a51a3", "#4a1486"],
     Oranges: ["#feedde", "#fdd0a2", "#fdae6b", "#fd8d3c", "#f16913", "#d94801", "#8c2d04"]
   };
+  const NO_CONDITION = "none";
+  const STEP_KEYS = {
+    filter: ["towns"], style: ["measure", "method", "classes", "ramp", "legend"],
+    condition: ["condType", "routeMode", "routeNames", "adminType", "rtNumber", "access", "minAcres", "onlyTowns", "off", "chcsOff", "stores", "condName", "focus"],
+    buffer: ["miles", "bufName", "bufColor"]
+  };
+
+  function resetStep(state, opening, step) {
+    const result = { ...state };
+    const keys = step === "all" ? [...Object.values(STEP_KEYS).flat(), "title"] : STEP_KEYS[step];
+    for (const key of keys) {
+      if (Object.prototype.hasOwnProperty.call(opening, key)) result[key] = structuredClone(opening[key]);
+      else delete result[key];
+    }
+    return result;
+  }
+
   const METHODS = { quantile: "Quantiles", equal: "Equal intervals", jenks: "Natural breaks (Jenks)" };
   const BBOX_PAD_DEG = 0.03; // about two miles: keeps nearby roads and parks in view of the filtered towns
 
@@ -179,7 +196,22 @@
     try { return JSON.parse(fromBase64Url(h.slice(LINK_PREFIX.length))); } catch (e) { return null; }
   }
 
-  const api = { RAMPS, METHODS, rampColors, breaks, classOf, paddedBbox, townsInBbox, filterRoutes, clipToBbox,
+  function fitProjection(bbox, width, height, pad) {
+    const [west, south, east, north] = bbox;
+    const k = Math.cos((south + north) / 2 * Math.PI / 180);
+    const sc = Math.min(width / ((east - west) * k), height / (north - south)) * (pad == null ? 0.95 : 1 - 2 * pad / Math.min(width, height));
+    const ox = (width - (east - west) * k * sc) / 2, oy = (height - (north - south) * sc) / 2;
+    return { k, sc, ox, oy, project: ([x, y]) => [ox + (x - west) * k * sc, oy + (north - y) * sc] };
+  }
+
+  function pathFor(geometry, project) {
+    const polygons = geometry.type === "Polygon" ? [geometry.coordinates] : geometry.type === "MultiPolygon" ? geometry.coordinates : [];
+    return polygons.flatMap(p => p.map(r => r.map((point, i) => {
+      const [x, y] = project(point); return `${i ? "L" : "M"}${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join("") + "Z")).join("");
+  }
+
+  const api = { fitProjection, pathFor, STEP_KEYS, resetStep, NO_CONDITION, RAMPS, METHODS, rampColors, breaks, classOf, paddedBbox, townsInBbox, filterRoutes, clipToBbox,
     pointsInBbox, pointsInTracts, nearestEdge, storeRows, filterOpenSpace, bufferEach, touchedTracts, countByTown, touchingGroup, acsRange, encodeState, decodeState };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.ExplorerCore = api;

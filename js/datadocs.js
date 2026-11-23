@@ -10,14 +10,14 @@
   const MA_TRACTS = ["Geography", "Census tract, all of Massachusetts"];
   const EJ_LIC = ["License and credit", "U.S. Environmental Protection Agency, EJScreen; archived copy, Harvard Dataverse, doi:10.7910/DVN/RLR5AX."];
   // "Margin of error" row on every Census card (her approval 2026-11-18, word for word).
-  const ACS_MOE = ["Margin of error", "The ACS asks a sample of households, so every number is an estimate. The margin of error says how far off the estimate could be. "
-    + "The tract card and the tract table show it as a 95% confidence interval: the range the true value most likely falls in. "
+  const ACS_MOE = ["Margin of error", "The ACS asks a sample of households, so every number is an estimate. The margin of error gives the likely distance between the estimate and the true value. "
+    + "The tract card and the tract table show it as a 95% confidence interval: the range most likely to hold the true value. "
     + "The Census Bureau publishes margins of error at 90% confidence; the page converts them to 95% so they match the CDC PLACES layers. "
     + "When the page combines Census numbers into a percent, it computes the margin of error with the Census Bureau's formulas. "
     + "A wide range means a less certain estimate, often because few people in the tract are in the group."];
   const WHY_1979 = "In 1978, the federal government banned the sale of lead-based paint for use in homes (U.S. Environmental Protection Agency, EPA). "
     + "So a home built before 1978 is more likely to have lead paint. The Census Bureau groups homes by decade (1970–1979, 1960–1969, and so on), "
-    + "so it cannot separate 1977 from 1978 or 1979. “1979 or earlier” is the closest cutoff the data allow. It also counts homes built in 1978 and 1979, after the ban.";
+    + "so it cannot separate 1977 from 1978 or 1979. “1979 or earlier” is the closest cutoff in the data. It also counts homes built in 1978 and 1979, after the ban.";
 
   /** Cards that are not PLACES measures, by id. `layers` lists the layer keys a card explains. */
   const CARDS = {
@@ -51,7 +51,7 @@
       ACS_YEARS,
       MA_TRACTS,
       ["How the page gets the number", "ACS Table B25014 (Tenure by Occupants per Room) divides the number of people living in each home by its number of rooms. It counts owner-occupied and renter-occupied homes in five groups, from “0.50 or less” to “2.01 or more” occupants per room. The page adds the three groups above 1.00 (1.01 to 1.50, 1.51 to 2.00, and 2.01 or more) and divides by all occupied homes. For rented homes, it adds the three renter groups above 1.00 and divides by all rented homes."],
-      ["Keep in mind", "“Rooms” are whole rooms used for living: living rooms, dining rooms, kitchens and bedrooms count; bathrooms, halls, open porches and unfinished basements do not. The Census Bureau counts “1.01 or more occupants per room” as one of its “selected conditions” for judging housing quality. The rented-homes layer is a share of rented homes, not of all homes."],
+      ["Keep in mind", "“Rooms” are whole rooms used for living: living rooms, dining rooms, kitchens and bedrooms count; bathrooms, halls, open porches and unfinished basements do not count as rooms. The Census Bureau counts “1.01 or more occupants per room” as one of its “selected conditions” for judging housing quality. The rented-homes layer is a share of rented homes, not of all homes."],
       ACS_MOE,
       ["License and credit", ACS_LIC]] },
     no2: { layers: ["no2_ppb"], title: "Nitrogen dioxide (NO2) in the air, ppb", rows: [
@@ -93,18 +93,18 @@
       ["Publisher", ACS_PUB],
       ACS_YEARS,
       MA_TRACTS,
-      ["How the page gets the number", "Below the poverty level: ACS Table B17001 (Poverty Status in the Past 12 Months by Sex by Age) counts people below the poverty level and people at or above it. The page divides the number below by everyone the table counts. Below 150%: ACS Table C17002 (Ratio of Income to Poverty Level in the Past 12 Months) counts people in income steps. The page adds the four steps under 150% and divides by everyone the table counts."],
-      ["Why these two layers, and why 150%?", "MassHealth’s income limit for most adults is 133% of the poverty level, and MassHealth subtracts 5 percentage points from income, so in practice the limit is about 138%. The Census Bureau does not publish each family’s exact income compared with the poverty level. It groups people into steps: under 50%, 50–99%, 100–124%, 125–149%, 150–184%, 185–199%, and 200% and over. 138% falls inside the 125–149% step, so no Census layer matches it exactly. The two layers sit on either side of it: below the poverty level counts fewer people than the limit covers, and below 150% also counts some people just above it (from 138% to 149%). Choose the one that fits your question, and say why. Programs set income limits with the poverty guidelines from the U.S. Department of Health and Human Services (HHS); the Census Bureau measures with its own poverty thresholds. The two are close but not the same."],
-      ["Keep in mind", "Both tables count only the people the Census Bureau calls “people for whom poverty status is determined,” so some people, such as those living in institutions, are left out. The layers count everyone, not only people on MassHealth. *Dollar amounts: U.S. Census Bureau, Poverty Thresholds for 2023, two adults and two children; the line is different for other family sizes, and the ACS uses the line for the year each family answered."],
+      ["How the page gets the number", "Below the poverty level: ACS Table B17001 (Poverty Status in the Past 12 Months by Sex by Age) counts people below the poverty level and people at or above it. The page divides the number below by everyone in the table. Below 150%: ACS Table C17002 (Ratio of Income to Poverty Level in the Past 12 Months) counts people in income steps. The page adds the four steps under 150% and divides by everyone in the table."],
+      ["Why these two layers, and why 150%?", "MassHealth’s income limit for most adults is 133% of the poverty level, and MassHealth subtracts 5 percentage points from income, so in practice the limit is about 138%. The Census Bureau does not publish each family’s exact income compared with the poverty level. It groups people into steps: under 50%, 50–99%, 100–124%, 125–149%, 150–184%, 185–199%, and 200% or more. 138% falls inside the 125–149% step, so no Census layer matches it exactly. The two layers sit on either side of it: below the poverty level counts fewer people than the limit covers, and below 150% also counts some people just above it (from 138% to 149%). Choose the one that fits your question, and say why. Programs set income limits with the poverty guidelines from the U.S. Department of Health and Human Services (HHS); the Census Bureau measures with its own poverty thresholds. The two are close but not the same."],
+      ["Keep in mind", "Both tables count only the people the Census Bureau calls “people for whom poverty status is determined,” so the count leaves out some people, such as those living in institutions. The layers count everyone, not only people on MassHealth. *Dollar amounts: U.S. Census Bureau, Poverty Thresholds for 2023, two adults and two children; the line is different for other family sizes, and the ACS uses the line for the year of each family's answer."],
       ACS_MOE,
       ["License and credit", ACS_LIC]] },
     hours15to34: { layers: ["pct_16_64_15to34h"], title: "People 16–64 who usually worked 15 to 34 hours a week, %", rows: [
-      ["What it measures", "Of the people aged 16 to 64 in each census tract, the percent who worked in the past 12 months and usually worked 15 to 34 hours a week in the weeks they worked."],
+      ["What it measures", "Of the people aged 16 to 64 in each census tract, the percent who worked in the past 12 months and usually worked 15 to 34 hours a week in their weeks of work."],
       ["Publisher", ACS_PUB],
       ACS_YEARS,
       MA_TRACTS,
-      ["How the page gets the number", "ACS Table B23022 counts people 16 to 64 by sex, whether they worked in the past 12 months, the hours they usually worked each week (35 or more, 15 to 34, 1 to 14) and the weeks they worked. The page adds men and women who usually worked 15 to 34 hours a week and divides by all people 16 to 64."],
-      ["Why 15 to 34 hours?", "Beginning in January 2027, a new federal rule requires many adults aged 19 to 64 who get MassHealth to show 80 hours a month of work, community service, a work program, or school (at least half-time), unless they are exempt (U.S. Centers for Medicare & Medicaid Services). 80 hours a month is about 18.5 hours a week. The Census Bureau groups the hours people usually work each week into three steps: 1 to 14, 15 to 34, and 35 or more. 18.5 hours falls inside the 15-to-34 step, so this layer shows where people work part-time hours around that line. It cannot tell who works fewer than 18.5 hours a week and who works more."],
+      ["How the page gets the number", "ACS Table B23022 counts people 16 to 64 by sex, whether they worked in the past 12 months, the hours they usually worked each week (35 or more, 15 to 34, 1 to 14) and their weeks of work. The page adds men and women who usually worked 15 to 34 hours a week and divides by all people 16 to 64."],
+      ["Why 15 to 34 hours?", "Beginning in January 2027, a new federal rule requires many adults aged 19 to 64 who get MassHealth to show 80 hours a month of work, community service, a work program, or school (at least half-time), unless they are exempt (U.S. Centers for Medicare & Medicaid Services). 80 hours a month is about 18.5 hours a week. The Census Bureau groups the hours people usually work each week into three steps: 1 to 14, 15 to 34, and 35 or more. 18.5 hours falls inside the 15-to-34 step, so this layer shows where people work part-time hours around that line. It cannot tell who works fewer than 18.5 hours a week and who works longer hours."],
       ["Keep in mind", "The hours are what people usually worked in the weeks they worked over the past 12 months, not in any one month, and some people worked only part of the year. The table covers ages 16 to 64, so it includes teenagers aged 16 to 18 and people the rule exempts, such as parents of young children. The layer counts everyone, not only people on MassHealth."],
       ACS_MOE,
       ["License and credit", ACS_LIC]] },
@@ -127,10 +127,10 @@
     cannabis: { layers: ["stores"], title: "Cannabis stores", rows: [
       ["What it measures", "Where each licensed adult-use cannabis (marijuana) store is, as a point on the map."],
       ["Publisher", "Massachusetts Cannabis Control Commission, open data: list of all licenses"],
-      ["Date", "List downloaded November 18, 2026. Counts stores whose license is active and that have started operating."],
+      ["Date", "List downloaded November 18, 2026. Counts stores with an active license that are already open for business."],
       ["Geography", "Points (store addresses), all of Massachusetts"],
       ["How it is made", "The page placed each store on the map from its street address with the U.S. Census Bureau's address-matching tool (the Census Geocoder). Step 4's buffer shows which stores are within the distance you choose of public open space, and the store table gives each store's distance to the nearest one, measured to its edge."],
-      ["Keep in mind", "The Commission says licensees report these data themselves. A license list shows who holds a license, not who is selling today: a store can hold a license and be closed, or open before the list is updated. Most stores licensed to sell cigarettes and vapes in Chelsea are corner stores, markets, liquor stores, gas stations, dollar stores and a supermarket, not specialty shops, so the same store can appear in several layers. A few addresses could not be matched to a place on the map, so a store can be missing."],
+      ["Keep in mind", "The Commission says licensees report these data themselves. A license list shows who holds a license, not who is selling today: a store can hold a license and be closed, or open before the next list update. Most stores licensed to sell cigarettes and vapes in Chelsea are corner stores, markets, liquor stores, gas stations, dollar stores and a supermarket, not specialty shops, so the same store can appear in several layers. A few addresses could not be matched to a place on the map, so a few stores may be absent from the map."],
       ["License and credit", "Public record. Massachusetts Cannabis Control Commission, Open Data Catalog."]] },
     cigaretteVape: { layers: ["stores"], title: "Stores licensed to sell cigarettes · Stores licensed to sell vapes (e-cigarettes)", rows: [
       ["What it measures", "Where each store with a state license to sell cigarettes is, and where each store with a state license to sell vapes (electronic nicotine delivery systems) is, as points on the map."],
@@ -138,7 +138,7 @@
       ["Date", "Licenses for October 1, 2026 to September 30, 2028; lists as of October 7, 2026"],
       ["Geography", "Points (store addresses), all of Massachusetts"],
       ["How it is made", "The page placed each store on the map from its street address with the U.S. Census Bureau's address-matching tool (the Census Geocoder). Step 4's buffer shows which stores are within the distance you choose of public open space, and the store table gives each store's distance to the nearest one, measured to its edge."],
-      ["Keep in mind", "A license list shows who holds a license, not who is selling today: a store can hold a license and be closed, or open before the list is updated. Most stores licensed to sell cigarettes and vapes in Chelsea are corner stores, markets, liquor stores, gas stations, dollar stores and a supermarket, not specialty shops, so the same store can appear in several layers. A few addresses could not be matched to a place on the map, so a store can be missing."],
+      ["Keep in mind", "A license list shows who holds a license, not who is selling today: a store can hold a license and be closed, or open before the next list update. Most stores licensed to sell cigarettes and vapes in Chelsea are corner stores, markets, liquor stores, gas stations, dollar stores and a supermarket, not specialty shops, so the same store can appear in several layers. A few addresses could not be matched to a place on the map, so a few stores may be absent from the map."],
       ["License and credit", "Public record. Massachusetts Department of Revenue."]] },
     liquor: { layers: ["stores"], title: "Liquor (package) stores", rows: [
       ["What it measures", "Where each store with a license to sell alcohol to take away (an “off-premises” or package-store license) is, as a point on the map."],
@@ -146,7 +146,7 @@
       ["Date", "Licenses with the status “Issued” on November 18, 2026"],
       ["Geography", "Points (store addresses)"],
       ["How it is made", "The ABCC list gives each store's name and town but not its street. The page found each store's street address in the Department of Revenue license lists, then the page placed each store on the map from its street address with the U.S. Census Bureau's address-matching tool (the Census Geocoder). Step 4's buffer shows which stores are within the distance you choose of public open space, and the store table gives each store's distance to the nearest one, measured to its edge."],
-      ["Keep in mind", "A license list shows who holds a license, not who is selling today: a store can hold a license and be closed, or open before the list is updated. Most stores licensed to sell cigarettes and vapes in Chelsea are corner stores, markets, liquor stores, gas stations, dollar stores and a supermarket, not specialty shops, so the same store can appear in several layers. A few addresses could not be matched to a place on the map, so a store can be missing. The ABCC list does not give street addresses, so stores were placed by matching their names to the Department of Revenue lists and Overture Maps. About 3 in 10 licenses statewide could not be matched and are not on the map; in Chelsea, 1 of 17 is missing."],
+      ["Keep in mind", "A license list shows who holds a license, not who is selling today: a store can hold a license and be closed, or open before the next list update. Most stores licensed to sell cigarettes and vapes in Chelsea are corner stores, markets, liquor stores, gas stations, dollar stores and a supermarket, not specialty shops, so the same store can appear in several layers. A few addresses could not be matched to a place on the map, so a few stores may be absent from the map. The ABCC list does not give street addresses, so stores were placed by matching their names to the Department of Revenue lists and Overture Maps. About 3 in 10 licenses statewide could not be matched and are not on the map; in Chelsea, 1 of 17 is absent from the map."],
       ["License and credit", "Public record. Massachusetts Alcoholic Beverages Control Commission."]] },
     convenience: { layers: ["stores"], title: "Convenience stores", rows: [
       ["What it measures", "Where each convenience store is, as a point on the map."],
@@ -154,7 +154,7 @@
       ["Date", "Release of November 18, 2026"],
       ["Geography", "Points (store locations), all of Massachusetts"],
       ["How it is made", "Overture labels each place with a category. The page keeps places labeled “convenience store,” leaves out places marked closed and places Overture is less sure exist, and keeps one store per address."],
-      ["Keep in mind", "Overture is built from online listings, so it can miss small corner stores or list one that has closed. There is no government list of convenience stores in Massachusetts."],
+      ["Keep in mind", "Overture is built from online listings, so it can miss small corner stores or still list a closed store. There is no government list of convenience stores in Massachusetts."],
       ["License and credit", "Overture Maps Foundation, Places, release 2026-11-18.0. Community Data License Agreement – Permissive 2.0 and other open licenses; credit Overture Maps Foundation."]] },
     routes: { layers: ["routes"], title: "Major roads (MA_major_routes)", rows: [
       ["What it measures", "Where major roads run: Interstate, U.S. and state routes."],
@@ -165,7 +165,7 @@
       ["What it measures", "Where protected and recreational open space is in Massachusetts: parks, conservation land, and similar land, with who may legally use it."],
       ["Publisher", "MassGIS (Bureau of Geographic Information)"],
       ["Geography", "Polygons (areas of land), all of Massachusetts"],
-      ["Keep in mind", "PUB_ACCESS is legal public access: Y = open to the public, N = not open, L = limited (membership only), X = unknown. It is legal access, not whether a place is easy to reach."],
+      ["Keep in mind", "PUB_ACCESS is legal public access: Y = open to the public, N = not open, L = limited (membership only), X = unknown. It describes legal access, not distance or ease of travel."],
       ["License and credit", "Public record. MassGIS (Bureau of Geographic Information), Commonwealth of Massachusetts."]] }
   };
 
@@ -197,7 +197,7 @@
     teen: { title: "Teen birth rate by city and town", rows: [
       ["What it measures", "Births to residents aged 15 to 19, per 1,000 females aged 15 to 19, for each city and town. Ten years (2013 through 2022) are combined into one rate."],
       ["Publisher", "Massachusetts Department of Public Health (DPH), Registry of Vital Records and Statistics: Birth Outcomes Data of Massachusetts Residents"],
-      ["Years", "2013–2022, combined. DPH marks 2022 as preliminary."],
+      ["Years", "All ten years from 2013 to 2022, pooled into one rate. DPH marks 2022 as preliminary."],
       ["Geography", "City or town, all of Massachusetts. DPH does not publish teen births by census tract."],
       ["How the page gets the number", "From DPH’s “Community Details” data download: Birthing Person’s Age Group, 15 to 19 years, rate of live births. The page shows DPH’s rate as published and does not recalculate it."],
       ["Keep in mind", "DPH hides any count of 1 to 4 births (“Small Population”), so those towns are hatched on the map. 31 towns are not listed in the file at all. Ten years are combined so more towns have enough births to show a rate, but a rate built on 5 to 9 births can still change a lot from one period to the next. Compare a town with other towns or with the state rate, never with the census-tract layers."],
@@ -206,7 +206,7 @@
       ["What it measures", "The same six CDC measures as the census-tract map, estimated for a whole city instead of one tract."],
       ["Publisher", "Centers for Disease Control and Prevention (CDC), PLACES, Place Data"],
       ["Release and years", "2025 release. Health measures from the 2023 Behavioral Risk Factor Surveillance System (BRFSS), a national telephone survey."],
-      ["Geography", "The 58 Massachusetts cities that CDC publishes. CDC does not publish the other 293 towns."],
+      ["Geography", "The 58 Massachusetts cities in CDC's city-level release. CDC does not publish the other 293 towns."],
       ["Keep in mind", "Each value is a model-based estimate with a 95 percent confidence interval. Compare a city with other cities, not with the tract map."],
       ["License and credit", "Public domain. Centers for Disease Control and Prevention, Division of Population Health."]] }
   };
@@ -235,7 +235,7 @@
   function kindOfCard(card) {
     const g = (card.rows.find(r => r[0] === "Geography") || [, ""])[1];
     if (/^Census tract/.test(g)) return "tracts";
-    if (/^City or town|cities that CDC publishes/.test(g)) return "town";
+    if (/^City or town|cities in CDC's city-level release/.test(g)) return "town";
     if (/^Points/.test(g)) return "points";
     if (/^Lines/.test(g)) return "line";
     if (/^Polygons/.test(g)) return "area";
