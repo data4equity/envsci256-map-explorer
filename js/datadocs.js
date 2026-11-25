@@ -133,7 +133,7 @@
       ["Keep in mind", "The Commission says licensees report these data themselves. A license list shows who holds a license, not who is selling today: a store can hold a license and be closed, or open before the next list update. Most stores licensed to sell cigarettes and vapes in Chelsea are corner stores, markets, liquor stores, gas stations, dollar stores and a supermarket, not specialty shops, so the same store can appear in several layers. A few addresses could not be matched to a place on the map, so a few stores may be absent from the map."],
       ["License and credit", "Public record. Massachusetts Cannabis Control Commission, Open Data Catalog."]] },
     cigaretteVape: { layers: ["stores"], title: "Stores licensed to sell cigarettes · Stores licensed to sell vapes (e-cigarettes)", rows: [
-      ["What it measures", "Where each store with a state license to sell cigarettes is, and where each store with a state license to sell vapes (electronic nicotine delivery systems) is, as points on the map."],
+      ["What it measures", "Where each store with a state license to sell cigarettes is, and where each store with a state license to sell vapes (electronic nicotine delivery systems) is, as points on the map. The vape list includes stores that also sell cigarettes."],
       ["Publisher", "Massachusetts Department of Revenue: cigarette retailer license list and electronic nicotine delivery systems (ENDS) retailer license list"],
       ["Date", "Licenses for October 1, 2026 to September 30, 2028; lists as of October 7, 2026"],
       ["Geography", "Points (store addresses), all of Massachusetts"],

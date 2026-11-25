@@ -9,10 +9,15 @@
     Oranges: ["#feedde", "#fdd0a2", "#fdae6b", "#fd8d3c", "#f16913", "#d94801", "#8c2d04"]
   };
   const NO_CONDITION = "none";
+  const TEAM_BUF_ORDER = ["parks", "routes", "chcs", "stores"];
+  const BUF_PAIR_COLORS = ["#ea580c", "#1565c0"];
+  const STORE_TYPES = ["cigarette", "vape", "liquor", "cannabis", "convenience"];
   const STEP_KEYS = {
     filter: ["towns"], style: ["measure", "method", "classes", "ramp", "legend"],
     condition: ["condType", "routeMode", "routeNames", "adminType", "rtNumber", "access", "minAcres", "onlyTowns", "off", "chcsOff", "stores", "condName", "focus"],
-    buffer: ["miles", "bufName", "bufColor"]
+    buffer: ["miles", "bufMiles", "bufName", "bufColor"],
+    show: ["show", "clip", "access", "minAcres", "off", "chcsOff", "routeMode", "routeNames", "adminType", "rtNumber", "focus"],
+    bufferthese: ["buf"]
   };
 
   function resetStep(state, opening, step) {
@@ -76,6 +81,36 @@
   function filterRoutes(routes, rule) {
     if (rule.mode === "num") return routes.filter(f => f.properties.ADMIN_TYPE === Number(rule.adminType) && String(f.properties.RT_NUMBER) === String(rule.rtNumber).trim());
     return routes.filter(f => rule.names.includes(f.properties.Route_Name));
+  }
+
+  /** A team buffer's distance (her pick 2026-11-25, D1): its own, or the shared one an older link carries. */
+  function bufferMilesFor(state, key) {
+    const own = state.bufMiles && state.bufMiles[key];
+    return own != null ? own : state.miles;
+  }
+
+  /** Her pick 2026-11-25 (option B): { road name: [towns it crosses] } for the major roads that cross the census
+      tracts of the chosen towns, towns in the order chosen. Each tract is tested on its own: a union of tracts can
+      come out wrong in turf and match every road. */
+  function routeTowns(routes, tracts, towns) {
+    const out = {};
+    if (!tracts.length) return out;
+    const boxes = tracts.map(t => [t, t.bbox || turf.bbox(t)]), area = turf.bbox(turf.featureCollection(tracts));
+    routes.forEach(route => {
+      // Cut the statewide road to the towns' area first, so each tract test runs on a short piece of it.
+      const piece = turf.bboxClip(route, area);
+      if (!piece.geometry.coordinates.length) return;
+      const box = turf.bbox(piece);
+      const crossed = new Set(boxes.filter(([, b]) => bboxesOverlap(b, box)).filter(([t]) => turf.booleanIntersects(piece, t)).map(([t]) => t.properties.City_Town));
+      const hit = towns.filter(town => crossed.has(town));
+      if (hit.length) out[route.properties.Route_Name] = [...new Set([...(out[route.properties.Route_Name] || []), ...hit])];
+    });
+    return out;
+  }
+
+  /** "Chelsea", "Chelsea or Wellesley", "Chelsea, Everett or Revere". */
+  function townsPhrase(towns) {
+    return towns.length < 2 ? (towns[0] || "") : `${towns.slice(0, -1).join(", ")} or ${towns[towns.length - 1]}`;
   }
 
   /** Routes cut to the area around the filtered towns, so a statewide road is buffered only where it matters. */
@@ -211,7 +246,160 @@
     }).join("") + "Z")).join("");
   }
 
-  const api = { fitProjection, pathFor, STEP_KEYS, resetStep, NO_CONDITION, RAMPS, METHODS, rampColors, breaks, classOf, paddedBbox, townsInBbox, filterRoutes, clipToBbox,
+  function teamGroupShown(show, key) {
+    return key === "stores" ? STORE_TYPES.some(type => show.includes(type)) : show.includes(key);
+  }
+
+  function normalizeTeamLayers(state, layers) {
+    const allowed = layers.flatMap(key => key === "stores" ? STORE_TYPES : [key]);
+    const show = [...new Set((state.show || []).filter(key => allowed.includes(key)))];
+    const buf = [...new Set((state.buf || []).filter(key => TEAM_BUF_ORDER.includes(key) && layers.includes(key) && teamGroupShown(show, key)))].slice(0, 2);
+    return { ...state, show, buf };
+  }
+
+  // Her pick 2026-11-25 (A2): a buffer's color stays apart from the tract colors, so its tint reads on every map.
+  // Orange tracts take a blue buffer (teal and blue for two); blue tracts take teal for the second buffer.
+  const BUF_COLORS_FOR_RAMP = { Oranges: { one: ["#1565c0"], two: ["#0f766e", "#1565c0"] }, Blues: { one: BUF_PAIR_COLORS, two: ["#ea580c", "#0f766e"] } };
+
+  function bufferPairColors(buf = [], ramp) {
+    const keys = TEAM_BUF_ORDER.filter(key => buf.includes(key)).slice(0, 2), set = BUF_COLORS_FOR_RAMP[ramp];
+    const colors = set ? (keys.length === 2 ? set.two : set.one) : BUF_PAIR_COLORS;
+    return keys.map((key, i) => ({ key, color: colors[i] }));
+  }
+
+  function toggleBuffer(buf = [], key) {
+    if (buf.includes(key)) return buf.filter(k => k !== key);
+    return buf.length < 2 ? [...buf, key] : [...buf];
+  }
+
+  function migrateTeamState(state) {
+    if (Array.isArray(state.show)) return { ...state, show: [...state.show], buf: Array.isArray(state.buf) ? [...state.buf] : [], clip: !!state.clip };
+    const show = [], buf = [];
+    if (["parks", "routes", "chcs"].includes(state.condType)) {
+      show.push(state.condType);
+      if (state.miles > 0) buf.push(state.condType);
+    }
+    if (typeof state.stores === "string" && STORE_TYPES.includes(state.stores)) show.push(state.stores);
+    const result = { ...state, show, buf, clip: !!state.onlyTowns, condType: "none", onlyTowns: false };
+    delete result.stores;
+    return result;
+  }
+
+  function clipToTowns(parks, docs) {
+    return parks.flatMap(park => {
+      const entries = docs.map(doc => doc[String(park.properties.id)]).filter(entry => entry != null);
+      if (!entries.length) return [];
+      if (entries.includes("all")) return [park];
+      const pieces = entries.map(entry => turf.feature(entry.geometry));
+      const geometry = pieces.length === 1 ? pieces[0].geometry : turf.union(turf.featureCollection(pieces)).geometry;
+      const acresInside = Math.round(entries.reduce((sum, entry) => sum + entry.acres, 0) * 100) / 100;
+      return [{ type: "Feature", properties: { ...park.properties, clipped: true, acresInside }, geometry }];
+    });
+  }
+
+  function mergedBuffer(features, miles) {
+    if (miles <= 0 || !features.length) return null;
+    const buffers = bufferEach(features, miles);
+    return buffers.length === 0 ? null : buffers.length === 1 ? buffers[0] : turf.union(turf.featureCollection(buffers));
+  }
+
+  function polygonPieces(feature) {
+    if (!feature) return [];
+    const polygons = feature.geometry.type === "Polygon" ? [feature.geometry.coordinates] : feature.geometry.coordinates;
+    return polygons.map(coordinates => { const piece = turf.polygon(coordinates); piece.bbox = turf.bbox(piece); return piece; });
+  }
+
+  function overlapOf(a, b) {
+    return a && b ? turf.intersect(turf.featureCollection([a, b])) : null;
+  }
+
+  function landShare(tract, pieces) {
+    if (!tract.aland) return 0;
+    const land = turf.feature(tract.land), bbox = turf.bbox(land);
+    let area = 0;
+    for (const piece of pieces) {
+      if (!bboxesOverlap(bbox, piece.bbox)) continue;
+      const intersection = overlapOf(land, piece);
+      if (intersection) area += turf.area(intersection);
+    }
+    return Math.min(1, area / tract.aland);
+  }
+
+  function sharePercent(share) {
+    return share > 0 && share < 0.005 ? "<1%" : `${Math.round(100 * share)}%`;
+  }
+
+  function shareCell(touches, share) {
+    return !touches ? "No" : share == null ? "Yes" : `Yes (${sharePercent(share)})`;
+  }
+
+  function tractShares(landTracts, unions) {
+    const pieces = Object.entries(unions).map(([key, union]) => [key, polygonPieces(union)]);
+    return Object.fromEntries(Object.entries(landTracts).map(([fips, tract]) => [fips,
+      Object.fromEntries(pieces.map(([key, polygons]) => [key, landShare(tract, polygons)]))]));
+  }
+
+  function greenShare(tract, parks) {
+    if (!tract.aland || !parks.length) return { acres: 0, share: 0 };
+    const land = turf.feature(tract.land), bbox = turf.bbox(land);
+    const pieces = parks.filter(park => bboxesOverlap(bbox, park.bbox || turf.bbox(park)))
+      .map(park => overlapOf(land, park)).filter(Boolean);
+    if (!pieces.length) return { acres: 0, share: 0 };
+    const merged = pieces.length === 1 ? pieces[0] : turf.union(turf.featureCollection(pieces));
+    const area = turf.area(merged);
+    return { acres: area / 4046.856, share: Math.min(1, area / tract.aland) };
+  }
+
+  function cityGreen(landTracts, parks) {
+    const byTract = Object.fromEntries(Object.entries(landTracts).map(([fips, tract]) => [fips, greenShare(tract, parks)]));
+    const acres = Object.values(byTract).reduce((sum, item) => sum + item.acres, 0);
+    const aland = Object.values(landTracts).reduce((sum, tract) => sum + (tract.aland || 0), 0);
+    return { acres, share: aland ? acres * 4046.856 / aland : 0, byTract };
+  }
+
+  function estimateInside(items) {
+    return items.reduce((result, { share, count }) => {
+      if (count != null && !Number.isNaN(count)) { result.inside += share * count; result.total += count; }
+      return result;
+    }, { inside: 0, total: 0 });
+  }
+
+  function slicePaths(cx, cy, r, colors) {
+    const n = x => (Math.abs(x) < 0.005 ? 0 : x).toFixed(2);
+    if (colors.length === 1) return `<circle cx="${n(cx)}" cy="${n(cy)}" r="${n(r)}" fill="${colors[0]}"/>`;
+    const angle = 2 * Math.PI / colors.length;
+    return colors.map((color, i) => {
+      const point = a => `${n(cx + r * Math.sin(a))},${n(cy - r * Math.cos(a))}`;
+      return `<path d="M${n(cx)},${n(cy)}L${point(i * angle)}A${n(r)},${n(r)} 0 ${angle > Math.PI ? 1 : 0} 1 ${point((i + 1) * angle)}Z" fill="${color}"/>`;
+    }).join("");
+  }
+
+  function listNames(types) {
+    const names = { cigarette: "cigarettes", vape: "vapes", liquor: "liquor (package)", cannabis: "cannabis", convenience: "convenience" };
+    return STORE_TYPES.filter(type => types.includes(type)).map(type => names[type]).join(", ");
+  }
+
+  function placeTypes(place, shownTypes) {
+    return STORE_TYPES.filter(type => shownTypes.includes(type) && place.properties.types.includes(type));
+  }
+
+  function storePlacesFor(places, shownTypes, tracts) {
+    if (!shownTypes.length || !tracts.length) return [];
+    const matching = places.filter(place => placeTypes(place, shownTypes).length);
+    return pointsInTracts(pointsInBbox(matching, paddedBbox(tracts)), tracts);
+  }
+
+  /** The Select all box on a team page's park or health center list: checked, clear, or mixed. */
+  function selectAllState(offCount, total) {
+    return { checked: total > 0 && offCount === 0, indeterminate: offCount > 0 && offCount < total };
+  }
+
+  function sourceLine(parts) {
+    const normalized = parts.map(part => (part || "").trim().replace(/\.$/, "").trim()).filter(Boolean);
+    return "Sources: " + [...new Set(normalized)].join("; ") + ".";
+  }
+
+  const api = { sourceLine, selectAllState, bufferMilesFor, routeTowns, townsPhrase, teamGroupShown, normalizeTeamLayers, TEAM_BUF_ORDER, BUF_PAIR_COLORS, STORE_TYPES, bufferPairColors, toggleBuffer, migrateTeamState, clipToTowns, mergedBuffer, polygonPieces, overlapOf, landShare, sharePercent, shareCell, tractShares, greenShare, cityGreen, estimateInside, slicePaths, listNames, storePlacesFor, placeTypes, fitProjection, pathFor, STEP_KEYS, resetStep, NO_CONDITION, RAMPS, METHODS, rampColors, breaks, classOf, paddedBbox, townsInBbox, filterRoutes, clipToBbox,
     pointsInBbox, pointsInTracts, nearestEdge, storeRows, filterOpenSpace, bufferEach, touchedTracts, countByTown, touchingGroup, acsRange, encodeState, decodeState };
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.ExplorerCore = api;

@@ -28,17 +28,30 @@
     return entries.flatMap(e => osCache.get(e.file) || []);
   }
 
+  const landFiles = new Map();
+  let landIndex = null, places = null, countsPromise = null;
+  function counts() { return countsPromise || (countsPromise = getJSON("data/term/counts.json")); }
+  /** Town boundaries and park polygons, fetched once per file. */
+  async function landFor(towns) {
+    if (!landIndex) landIndex = getJSON("data/land/index.json");
+    const index = await landIndex;
+    const entries = index.filter(e => towns.includes(e.town));
+    return Promise.all(entries.map(e => {
+      if (!landFiles.has(e.file)) landFiles.set(e.file, getJSON(`data/${e.file}`));
+      return landFiles.get(e.file);
+    }));
+  }
+
+  /** Store locations shared by the team pages. */
+  function storePlaces() {
+    if (!places) places = getJSON("data/stores/places.json");
+    return places;
+  }
+
   /** The community health centers (Question B's step 3 layer), fetched the first time a page needs them. */
   function healthCenters() {
     if (!centers) centers = getJSON("data/chcs.json").then(doc => { data.sources.chcs = { source: doc.source }; return doc.features; });
     return centers;
-  }
-
-  /** One Question C store layer (data/stores/<key>.json), fetched the first time a page shows it. */
-  const storeFiles = new Map();
-  function storesFor(key) {
-    if (!storeFiles.has(key)) storeFiles.set(key, getJSON(`data/stores/${key}.json`));
-    return storeFiles.get(key);
   }
 
   /** A question's layer file, fetched once: its values are copied onto the statewide tracts. */
@@ -87,14 +100,18 @@
     status.hidden = true;
     await visuals;
     if (teamShown !== team.id) return;
-    box.querySelector("[data-t=rows]").innerHTML = q.layers.map(l => [l, layerRow(l, doc)]).filter(([, r]) => r).map(([l, [a, b]]) => `<tr><td>${symbol(DD().kindOfLayer(l))}${esc(a)}</td><td>${esc(b)}</td></tr>`).join("");
+    const rows = q.layers.map(l => [l, layerRow(l, doc)]).filter(([, r]) => r);
+    box.querySelector("[data-t=rows]").innerHTML = rows.map(([l, [a, b]]) => `<tr><td>${symbol(DD().kindOfLayer(l))}${esc(a)}</td><td>${esc(b)}</td></tr>`).join("");
+    put("lyropen", `▸ Layers already added for Question ${q.id.toUpperCase()}`);
+    put("lyrclose", `▾ Hide: Layers already added for Question ${q.id.toUpperCase()}`);
+    put("lyrsum", `${rows.length} layers and the source of each`);
     await visuals;
     box.querySelector("[data-t=docs]").innerHTML = cardsHtml(window.DataDocs.cardsFor(q, window.PLACES_MEASURES));
     const kinds = [...new Set(q.layers.filter(l => layerRow(l, doc)).map(DD().kindOfLayer).filter(Boolean))];
     box.querySelector("[data-t=lyrkey]").innerHTML = kinds.map(k => `${symbol(k)}${esc(DD().KINDS[k])}`).join(" &nbsp; ");
     box.querySelector("[data-t=flow3]").innerHTML = V.ico_tracts || "";
     box.querySelector("details.about").open = false;
-    const state = fromLink && fromLink.tab === team.id ? fromLink : T.startState(team);
+    const state = fromLink && fromLink.tab === team.id ? C.migrateTeamState(fromLink) : T.startState(team);
     // Forget the old map as soon as it is removed: setupScales must never resize a removed map (the bug that broke
     // switching from one team page to another, found on the live site 2026-11-20).
     if (teamExplorer) { teamExplorer.map.remove(); teamExplorer = null; }
@@ -102,8 +119,8 @@
     const rq = document.getElementById("tp-rq");
     rq.value = state.rq || "";
     rq.oninput = () => { if (teamExplorer) teamExplorer.s.rq = rq.value; };
-    teamExplorer = new window.Explorer(document.getElementById("team-explorer"), { tracts: data.tracts, routes: data.routes, sources: data.sources, openSpaceFor, healthCenters, storesFor }, state,
-      { opening: T.startState(team), pickRows: true, optionalBuffer: true, termLayers: T.fileLayerKeys(q), termHeading: `Question ${q.id.toUpperCase()} layers`, conditions: T.conditionLayers(q), stores: T.storeLayers(q) });
+    teamExplorer = new window.Explorer(document.getElementById("team-explorer"), { tracts: data.tracts, routes: data.routes, sources: data.sources, openSpaceFor, healthCenters, landFor, storePlaces, counts }, state,
+      { green: !!q.green, opening: T.startState(team), pickRows: true, optionalBuffer: true, termLayers: T.fileLayerKeys(q), termHeading: `Question ${q.id.toUpperCase()} layers`, conditions: T.conditionLayers(q), stores: T.storeLayers(q), layers: T.showLayers(q) });
   }
 
   /** Question D: "Census tracts" | "Cities and towns" tabs above the map (her pick "B, tabs", 2026-11-18). */
