@@ -746,10 +746,13 @@
 
     /** What the buffers hold in each town, for the card above the map: [{ town, green, rows }]. A row is
         { label, color, tiles } per buffer (plus "Inside both buffers"); "counting" while the land shares load. */
+    /** Her ruling 2026-11-25: public open space shows only when parks are ticked in step 3. */
+    greenShown() { return !!this.opts.green && this.s.show.includes("parks"); }
+
     cityFacts() {
       const s = this.s, T = root.TermTeams, two = this.pair.length === 2;
       return s.towns.map(town => {
-        const item = this.opts.green ? (this.green?.[town] || "counting") : null;
+        const item = this.greenShown() ? (this.green?.[town] || "counting") : null;
         if (!this.pair.length) return { town, green: item, rows: [] };
         if (!this.shares) return { town, green: item, rows: "counting" };
         const tracts = this.sel.filter(f => f.properties.City_Town === town);
@@ -771,8 +774,13 @@
       // Her ask 2026-11-25: nothing shows here until a neighborhood condition is ticked in step 3.
       const b = this.bandEl, facts = { buffers: this.pair, towns: this.team && this.s.show.length ? this.cityFacts() : [] };
       const shown = facts.towns.filter(f => f.green || f.rows === "counting" || f.rows.length);
-      b.hidden = !shown.length;
-      if (!shown.length) { b.innerHTML = ""; return; }
+      // Her report 2026-11-25: the store count moved here from under the tract table, where it was easy to miss.
+      const sum = this.team && this.s.show.length ? this.storeSummary() : null;
+      const storeTile = sum ? `<div class="btown">Stores, all your towns</div><div class="btiles">${sum.buffered
+        ? `<div class="btile" style="--c:#475569"><b>${sum.inside} of ${sum.rows.length}</b><span>stores on the map sit inside the ${sum.miles}-mile parks buffer</span></div>`
+        : `<div class="btile" style="--c:#475569"><b>${sum.rows.length}</b><span>stores on the lists you ticked, in your chosen towns</span></div>`}</div>` : "";
+      b.hidden = !shown.length && !storeTile;
+      if (b.hidden) { b.innerHTML = ""; return; }
       const tile = (t, cls = "") => `<div class="btile ${cls}"${t.color ? ` style="--c:${t.color}"` : ""}><b>${esc(t.big)}</b><span>${esc(t.text)}</span></div>`;
       const counting = '<div class="btile wait"><span>Counting…</span></div>';
       const greenTile = f => f.green === "counting" ? counting : tile({ big: `${(f.green.share * 100).toFixed(1)}%`, text: `of ${f.town}'s land is public open space (${Math.round(f.green.acres).toLocaleString("en-US")} acres)` }, "green");
@@ -782,10 +790,10 @@
           : f.rows.map(r => `<div class="brow"><div class="blab"><i class="sw ${r.key === "both" ? "both" : "ln"}"${r.color ? ` style="border-color:${r.color};background:${tint(r.color)}"` : ""}></i>${esc(r.label)}</div><div class="btiles">${r.tiles.map(t => tile({ ...t, color: r.color || "#4a148c" })).join("")}</div></div>`).join("") + (f.green ? `<div class="btiles">${greenTile(f)}</div>` : "");
         return (many ? `<div class="btown">${esc(f.town)}</div>` : "") + rows;
       }).join("");
-      const heading = facts.buffers.length ? `Your ${facts.buffers.length > 1 ? "buffers" : "buffer"} in numbers` : "Public open space";
+      const heading = facts.buffers.length ? `Your ${facts.buffers.length > 1 ? "buffers" : "buffer"} in numbers` : storeTile ? "Your map in numbers" : "Public open space";
       const button = facts.buffers.length ? `<button type="button" class="ibtn" data-bandnote aria-label="How these numbers are estimated" aria-expanded="${!!this.bandNoteOpen}">i</button>` : "";
       b.style.setProperty("--edge", facts.buffers[0]?.color || "#2f7d32");
-      b.innerHTML = `<div class="bhd">${heading}${button}</div>${body}` + (button && this.bandNoteOpen ? `<div class="colnote">Estimates: each census tract's count times the share of its land inside the buffer. They assume people and homes are spread evenly across each census tract.</div>` : "");
+      b.innerHTML = `<div class="bhd">${heading}${button}</div>${body}${storeTile}` + (button && this.bandNoteOpen ? `<div class="colnote"><b>How these numbers are estimated.</b> The map can't see where people live inside a census tract. So when 40% of a tract's land is inside the buffer, the map counts 40% of that tract's residents as inside the buffer. That treats people as if they were spread evenly across the tract, so read these numbers as estimates, not exact counts.</div>` : "");
       const toggle = b.querySelector("[data-bandnote]");
       if (toggle) toggle.onclick = () => { this.bandNoteOpen = !this.bandNoteOpen; this.renderBand(); };
     }
@@ -800,12 +808,12 @@
       const pick = !!this.opts.pickRows; // team pages: click a row to highlight its tract (her ask 2026-11-19)
       const ck = ciKey(s.measure), summary = this.team ? this.pair.flatMap(b => C.countByTown(this.sel, this.touchBy[b.key], s.towns).map(([tw, a, n]) => `${esc(tw)}: ${a} of ${n} touch the ${esc(b.label)} buffer`)).join(" · ") : this.bufs.length ? C.countByTown(this.sel, this.touch, s.towns).map(([tw, a, n]) => `${esc(tw)}: ${a} of ${n} touch the buffer`).join(" · ") : "Add a condition and a buffer to see which tracts touch it";
       const noteButton = key => `<button type="button" class="ibtn" data-note="${key}" aria-label="About this column" aria-expanded="${this.noteOpen === key}">i</button>`;
-      const shownNotes = ["value", "ci", ...(moeCol ? ["moe"] : []), ...(this.opts.green ? ["green"] : []), ...(this.team ? [...this.pair.map(b => `buf-${b.key}`), ...(this.pair.length === 2 ? ["both"] : [])] : this.bufs.length ? ["buffer"] : [])];
-      const note = shownNotes.includes(this.noteOpen) ? `<tr class="noterow"><td colspan="${4 + Number(moeCol) + Number(!!this.opts.green) + (this.team ? this.pair.length + Number(this.pair.length === 2) : Number(!!this.bufs.length))}"><div class="colnote">${COLUMN_NOTES[this.noteOpen]}</div></td></tr>` : "";
+      const shownNotes = ["value", "ci", ...(moeCol ? ["moe"] : []), ...(this.greenShown() ? ["green"] : []), ...(this.team ? [...this.pair.map(b => `buf-${b.key}`), ...(this.pair.length === 2 ? ["both"] : [])] : this.bufs.length ? ["buffer"] : [])];
+      const note = shownNotes.includes(this.noteOpen) ? `<tr class="noterow"><td colspan="${4 + Number(moeCol) + Number(this.greenShown()) + (this.team ? this.pair.length + Number(this.pair.length === 2) : Number(!!this.bufs.length))}"><div class="colnote">${COLUMN_NOTES[this.noteOpen]}</div></td></tr>` : "";
       // Option B (her pick, 2026-11-18): the summary is a visible button, with what the table holds spelled out.
       t.innerHTML = `<details class="ttab" ${this.tableOpen ? "open" : ""}><summary><span class="tbtn"><span class="tbtn-open">▸ Open the tract table</span><span class="tbtn-close">▾ Hide the tract table</span></span><span class="tsum">Every tract's value, its 95% confidence interval, and whether it is included in the buffer · ${rows.length} tracts${summary ? ` · ${summary}` : ""}${pick ? " · Click a row to see that tract on the map" : ""}${this.team && this.pair.length && !this.shares ? (this.sharesError ? " · The page could not load the land areas, so the table shows Yes or No only." : " · Counting the shares of land…") : ""}</span></summary>
-        <div class="tscroll"><table><thead><tr><th scope="col">GEOID</th><th scope="col">Town</th><th scope="col">Value (${esc(unitOf(s.measure))})${noteButton("value")}</th><th scope="col">95% Confidence Intervals${noteButton("ci")}</th>${moeCol ? `<th scope="col">Margin of error (±)${noteButton("moe")}</th>` : ""}${this.opts.green ? `<th scope="col">Public green space (% of land)${noteButton("green")}</th>` : ""}${this.team ? this.pair.map(b => `<th scope="col">${({ parks: "Parks", routes: "Roads", chcs: "Health centers", stores: "Store" })[b.key]} buffer${noteButton(`buf-${b.key}`)}</th>`).join("") + (this.pair.length === 2 ? `<th scope="col">Inside both${noteButton("both")}</th>` : "") : this.bufs.length ? `<th scope="col">Included in the buffer?${noteButton("buffer")}</th>` : ""}</tr>${note}</thead><tbody>` +
-        rows.map(f => { const p = f.properties; return `<tr${pick ? ` data-fips="${esc(p.TractFIPS)}" tabindex="0"${p.TractFIPS === this.pick ? ' class="on"' : ""}` : ""}><td>${esc(p.TractFIPS)}</td><td>${esc(p.City_Town)}</td><td>${fmtFor(s.measure)(p[valueKey(s.measure)])}</td>${term ? termCells(p) : `<td>${esc((ck && p[ck]) || "–")}</td>`}${this.opts.green ? `<td>${this.green?.[p.City_Town]?.byTract[p.TractFIPS] ? (this.green[p.City_Town].byTract[p.TractFIPS].share * 100).toFixed(1) + "%" : "Counting…"}</td>` : ""}${this.team ? this.pair.map(b => `<td>${esc(C.shareCell(this.touchBy[b.key].has(p.TractFIPS), this.shares?.[p.TractFIPS]?.[b.key]))}</td>`).join("") + (this.pair.length === 2 ? `<td>${esc(C.shareCell(this.touchBoth.has(p.TractFIPS), this.shares?.[p.TractFIPS]?.both))}</td>` : "") : this.bufs.length ? `<td>${this.touch.has(p.TractFIPS) ? "Yes" : "No"}</td>` : ""}</tr>`; }).join("") +
+        <div class="tscroll"><table><thead><tr><th scope="col">GEOID</th><th scope="col">Town</th><th scope="col">Value (${esc(unitOf(s.measure))})${noteButton("value")}</th><th scope="col">95% Confidence Intervals${noteButton("ci")}</th>${moeCol ? `<th scope="col">Margin of error (±)${noteButton("moe")}</th>` : ""}${this.greenShown() ? `<th scope="col">Public green space (% of land)${noteButton("green")}</th>` : ""}${this.team ? this.pair.map(b => `<th scope="col">${({ parks: "Parks", routes: "Roads", chcs: "Health centers", stores: "Store" })[b.key]} buffer${noteButton(`buf-${b.key}`)}</th>`).join("") + (this.pair.length === 2 ? `<th scope="col">Inside both${noteButton("both")}</th>` : "") : this.bufs.length ? `<th scope="col">Included in the buffer?${noteButton("buffer")}</th>` : ""}</tr>${note}</thead><tbody>` +
+        rows.map(f => { const p = f.properties; return `<tr${pick ? ` data-fips="${esc(p.TractFIPS)}" tabindex="0"${p.TractFIPS === this.pick ? ' class="on"' : ""}` : ""}><td>${esc(p.TractFIPS)}</td><td>${esc(p.City_Town)}</td><td>${fmtFor(s.measure)(p[valueKey(s.measure)])}</td>${term ? termCells(p) : `<td>${esc((ck && p[ck]) || "–")}</td>`}${this.greenShown() ? `<td>${this.green?.[p.City_Town]?.byTract[p.TractFIPS] ? (this.green[p.City_Town].byTract[p.TractFIPS].share * 100).toFixed(1) + "%" : "Counting…"}</td>` : ""}${this.team ? this.pair.map(b => `<td>${esc(C.shareCell(this.touchBy[b.key].has(p.TractFIPS), this.shares?.[p.TractFIPS]?.[b.key]))}</td>`).join("") + (this.pair.length === 2 ? `<td>${esc(C.shareCell(this.touchBoth.has(p.TractFIPS), this.shares?.[p.TractFIPS]?.both))}</td>` : "") : this.bufs.length ? `<td>${this.touch.has(p.TractFIPS) ? "Yes" : "No"}</td>` : ""}</tr>`; }).join("") +
         `</tbody></table></div>${this.bufs.length ? `<p class="colnote small">Area, not people: a “Yes” means some part of the census tract touches a buffer, not that everyone in it lives inside the buffer.</p>` : ""}${this.team && this.pair.length ? `<p class="colnote small">Water: the percents count land area, not water. Rivers, creeks and harbor water inside a census tract's boundary do not count toward its area.</p>` : ""}</details>` + (this.team ? this.teamStoreTable() : "");
       t.querySelectorAll(".ibtn").forEach(button => { button.onclick = e => { e.preventDefault(); e.stopPropagation(); this.noteOpen = this.noteOpen === button.dataset.note ? null : button.dataset.note; this.tableOpen = true; this.renderTable(); }; });
       t.querySelector("details").addEventListener("toggle", e => { this.tableOpen = e.target.open; });
@@ -817,14 +825,25 @@
       const sd = t.querySelector("details.stab"); if (sd) sd.addEventListener("toggle", e => { this.storeTableOpen = e.target.open; });
     }
 
-    teamStoreTable() {
+    /** The stores on the map, each with its nearest open space when parks show; worked out once per map. */
+    storeSummary() {
       const s = this.s;
-      if (!s.towns.length || !C.STORE_TYPES.some(type => s.show.includes(type))) return "";
-      const parks = s.show.includes("parks"), parkBuf = this.pair.find(b => b.key === "parks"), buffered = parks && !!parkBuf;
+      if (!s.towns.length || !C.STORE_TYPES.some(type => s.show.includes(type))) return null;
+      const parks = s.show.includes("parks"), parkBuf = this.pair.find(b => b.key === "parks"), miles = parks && parkBuf ? parkBuf.miles : -1;
+      const c = this.storeCache;
+      if (c && c.places === this.places && c.parks === this.parks && c.miles === miles) return c.sum;
       const name = p => p.names[p.types[0]];
-      const rows = parks ? C.storeRows(this.places, this.parks || [], buffered ? parkBuf.miles : -1) : [...this.places].sort((a, b) => name(a.properties).localeCompare(name(b.properties))).map(store => ({ store }));
-      const count = !rows.length ? "No stores on the lists you ticked in your chosen towns." : buffered ? `<b>${rows.filter(r => r.inside).length} of ${rows.length}</b> stores shown on the map are inside the ${parkBuf.miles}-mile parks buffer.` : `<b>${rows.length}</b> stores shown on the map in your chosen towns.`;
-      return `<div class="scount">${count}</div><details class="ttab stab" ${this.storeTableOpen ? "open" : ""}><summary><span class="tbtn"><span class="tbtn-open">▸ Open the store table</span><span class="tbtn-close">▾ Hide the store table</span></span><span class="tsum">${parks ? "Each store, every list it is on, and the nearest open space on the map" : "Each store and every list it is on"}</span></summary>
+      const rows = parks ? C.storeRows(this.places, this.parks || [], miles) : [...this.places].sort((a, b) => name(a.properties).localeCompare(name(b.properties))).map(store => ({ store }));
+      const sum = { rows, parks, buffered: miles > 0, miles, inside: rows.filter(r => r.inside).length };
+      this.storeCache = { places: this.places, parks: this.parks, miles, sum };
+      return sum;
+    }
+
+    teamStoreTable() {
+      const sum = this.storeSummary();
+      if (!sum) return "";
+      const s = this.s, { rows, parks, buffered } = sum, name = p => p.names[p.types[0]];
+      return `<details class="ttab stab" ${this.storeTableOpen ? "open" : ""}><summary><span class="tbtn"><span class="tbtn-open">▸ Open the store table</span><span class="tbtn-close">▾ Hide the store table</span></span><span class="tsum">${parks ? "Each store, its lists, and the nearest open space on the map" : "Each store and its lists"}</span></summary>
         <div class="tscroll"><table><thead><tr><th scope="col">Store</th><th scope="col">Address</th><th scope="col">On these lists</th>${parks ? `<th scope="col">Nearest open space on the map</th><th scope="col">Miles to its edge</th>${buffered ? '<th scope="col">Inside the parks buffer?</th>' : ""}` : ""}</tr></thead><tbody>` +
         rows.map(r => { const p = r.store.properties; return `<tr><td>${esc(name(p))}</td><td>${esc(p.addr)}${s.towns.length > 1 ? `, ${esc(p.town)}` : ""}</td><td>${esc(C.listNames(p.types))}</td>${parks ? `<td>${esc(r.park || "–")}</td><td>${r.miles == null ? "–" : r.miles.toFixed(2)}</td>${buffered ? `<td>${r.inside ? "Yes" : "No"}</td>` : ""}` : ""}</tr>`; }).join("") + `</tbody></table></div></details>`;
     }
